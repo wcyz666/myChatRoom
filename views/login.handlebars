@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" >
+    <title>Login To Fun Run Web</title>
+
+	<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/login.css">
+</head>
+<body>
+    {{#unless state}}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-10 col-md-offset-1">
+                    <div class="alert alert-danger alert-dismissable">
+                        <button type="button" class="close" data-dismiss="alert"aria-hidden="true">
+                            &times;
+                        </button><h4>Incorrect username or password.</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/unless}}
+	<div class="container">
+        <div id="login-wraper">
+    <form class="form login-form" role="form" method="POST" action="/login">
+    <legend>Sign in to <span class="blue">Fun Run Web</span></legend>
+
+    <div class="body col-md-12">
+    <div class="form-group col-md-offset-1 col-md-10">
+
+    <input type="text" required="required" class="form-control input-lg" name="username" placeholder="Username">
+    </div>
+    <div class="form-group col-md-offset-1 col-md-10">
+
+    <input type="password" required="required" class="form-control input-lg" name="password" placeholder="Password">
+    </div>
+    </div>
+
+    <div class="footer col-md-12"><br>
+    <button type="submit" class="btn-lg btn btn-success">Login</button>
+    </div>
+
+    </form>
+        </div>
+
+    </div>
+
+    <footer class="white navbar-fixed-bottom">
+      Don't have an account yet? <a href="/reg.html" class="btn btn-black">Register</a>
+    </footer>
+
+</body>
+<script src="/javascripts/jquery.min.js"></script>
+<script src="/javascripts/bootstrap.min.js"></script>
+<script src="/javascripts/backstretch.js"></script>
+<script src="/javascripts/login.js"></script>
+</html>
