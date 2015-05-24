@@ -66,7 +66,7 @@
     });
 
     $('#joinRoom').on('click', function (event) {
-        $.get("/api/allrooms", function(data){
+        $.get("/api/allRooms", function(data){
             var roomNum,
                 tableBody = "";
             for (roomNum in data) {

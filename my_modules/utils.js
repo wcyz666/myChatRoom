@@ -1,7 +1,6 @@
 /**
  * Created by lenovo on 2015/3/6.
  */
-var mysql = require("mysql");
 
 var utils = {
 
@@ -11,6 +10,6 @@ var utils = {
         } while (room in currentRooms);
         return room;
     }
-}
+};
 
 module.exports = utils;

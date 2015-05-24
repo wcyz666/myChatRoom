@@ -1,15 +1,17 @@
 #!/bin/env node
-var express = require('express');
-var bodyParser = require('body-parser');
-var utils = require('./my_modules/utils');
-var handlebars = require('express-handlebars').create({});
-var cookieParser = require('cookie-parser');
-var mysql = require('mysql');
-var md5 = require('md5');
-var socketIO = require('socket.io');
+var express = require('express'),
+    app = express(),
+    bodyParser = require('body-parser'),
+    utils = require('./my_modules/utils'),
+    handlebars = require('express-handlebars').create({}),
+    cookieParser = require('cookie-parser'),
+    sqlite3 = require('sqlite3').verbose(),
+    db = new sqlite3.Database(':memory:'),
+    md5 = require('md5'),
+    socketIO = require('socket.io'),
+    api = require("./routes/api");
 
-var app = express();
-var io;
+
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", 'handlebars');
 app.use(cookieParser());
@@ -19,22 +21,22 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }));
 app.use( express.static( __dirname + '/public' ) );
 
+var server_port =  3000;
+var server_ip_address = '127.0.0.1';
 
-var connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : '',
-    database : "FUNRUNWEB"
+var server = app.listen( server_port, server_ip_address, function () {
+    var host = server.address().address,
+        port = server.address().port;
+
+    console.log('Example app listening at http://%s:%s', host, port)
+
 });
 
+var io = socketIO(server);
+currentRooms = {};
+onlineUsers = {};
 
-var server_port = process.env.OPENSHIFT_NODEJS_PORT || 3000;
-var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '172.30.73.1';
-var currentRooms = {};
-var onlineUsers = {};
-
-connection.connect();
-
+app.use("/api", api);
 
 app.get('/', function(req, res){
 
@@ -175,30 +177,6 @@ app.get('/me', function(req, res) {
         res.render("me", {me : onlineUsers[req.cookies.id].username});
 });
 
-app.get('/me/score', function(req, res) {
-    var username = onlineUsers[req.cookies.id].username,
-        sql,
-        inserts;
-    sql = "SELECT username, score FROM user ORDER BY score DESC, username ASC";
-    //console.log(sql);
-    connection.query(sql, function(err, rows, fields) {
-        if (err) throw err;
-        var i,
-            scores = [],
-            score;
-        for (i = 0; i < rows.length; i++){
-            score = {
-                username : rows[i].username,
-                score : rows[i].score,
-                rank : i + 1
-            };
-            scores.push(score);
-        }
-        console.log(req.cookies);
-        res.render("scores", {me : username, scores: scores});
-    });
-});
-
 app.get('/logout', function(req, res) {
     res.cookie("id", "", {maxAge: -1000});
     res.render("login", {state : true});
@@ -231,15 +209,6 @@ app.post('/new', function(req, res){
     res.redirect("/room/" + room);
 });
 
-app.get('/api/roomCount', function(req, res){
-    var key,
-        count = 0;
-
-    for (key in currentRooms)
-        ++count;
-
-    res.json({roomCount : count});
-});
 
 app.get('/pick', function(req, res){
     if (!onlineUsers[req.cookies.id]) {
@@ -318,16 +287,6 @@ app.get('/room/exit/:id([0-9]+)', function(req, res){
     res.redirect("/me");
 });
 
-/* GET users listing. */
-app.all('/api/allrooms', function(req, res) {
-    if (!onlineUsers[req.cookies.id]){
-        res.redirect("/");
-        return;
-    }
-    console.log(currentRooms);
-    res.json(currentRooms);
-});
-
 
 app.use(function (req, res) {
     res.status(404);
@@ -335,15 +294,6 @@ app.use(function (req, res) {
 });
 
 
-var server = app.listen( server_port, server_ip_address, function () {
-    var host = server.address().address;
-    var port = server.address().port;
-
-    console.log('Example app listening at http://%s:%s', host, port)
-
-});
-
-io = socketIO(server);
 io.on( 'connection', function( socket ) {
     console.log( 'New user connected' );
 
