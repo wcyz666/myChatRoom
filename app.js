@@ -6,8 +6,8 @@ var express = require('express'),
     handlebars = require('express-handlebars').create({}),
     cookieParser = require('cookie-parser'),
     sqlite3 = require('sqlite3').verbose(),
-    db = new sqlite3.Database(':memory:'),
-    md5 = require('md5'),
+    db = new sqlite3.Database('user.db'),
+    md5 = require('MD5'),
     socketIO = require('socket.io'),
     api = require("./routes/api");
 
@@ -49,10 +49,7 @@ app.get('/', function(req, res){
             });
         }
         else {
-            var sql = "SELECT * FROM user WHERE cookie = ?";
-            var inserts = [req.cookies.id];
-            sql = mysql.format(sql, inserts);
-            connection.query(sql, function(err, rows, fields) {
+            db.all("SELECT * FROM user WHERE cookie = ?", [req.cookies.id], function(err, rows) {
                 if (err) throw err;
                 if (rows.length > 0){
                     onlineUsers[req.cookies.id] = {
@@ -90,9 +87,8 @@ app.post('/login', function (req, res) {
         pwdhash = md5(req.body.username + req.body.password);
         sql = "SELECT * FROM user WHERE password = ?";
         inserts = [pwdhash];
-        sql = mysql.format(sql, inserts);
         //console.log(sql);
-        connection.query(sql, function(err, rows, fields) {
+        db.all(sql, inserts, function(err, rows) {
             if (err) throw err;
             if (rows.length > 0) {
                 cookie = md5(Math.random() + "");
@@ -104,8 +100,7 @@ app.post('/login', function (req, res) {
                     isPlaying: false,
                     currentRoom : -1
                 };
-                sql = mysql.format(sql, inserts);
-                connection.query(sql, function(){
+                db.run(sql, inserts, function(){
                     res.cookie("id", cookie, {maxAge: 1000 * 86400});
                     res.render("me",  {
                         me : onlineUsers[cookie].username
@@ -124,17 +119,14 @@ app.post('/login', function (req, res) {
 
 /* GET users listing. */
 app.get('/init', function(req, res) {
-    connection.connect();
-    connection.query('CREATE DATABASE funrunweb', function(err, rows, fields) {
+    db.serialize(function() {
+        db.run('CREATE TABLE user (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, username CHAR(20) NOT NULL,' +
+        'password CHAR(40) NOT NULL, cookie CHAR(40), score INTEGER)', function(){});
+        db.run('CREATE TABLE room (room_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_name CHAR(20) NOT NULL)', function(){});
+        db.run('CREATE TABLE record_archive (record_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_id INTEGER NOT NULL,'
+        + 'id INTEGER NOT NULL, post_time DATETIME)', function(){});
+        res.redirect("/");
     });
-    connection.query('CREATE TABLE user (id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, username CHAR(20) NOT NULL,' +
-    'password CHAR(40) NOT NULL, cookie CHAR(40), score INTEGER)', function(err, rows, fields) {
-        if (err) throw err;
-    });
-    connection.query('CREATE TABLE friend (id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,friend1 INTEGER NOT NULL, friend2 INTEGER NOT NULL)', function(err, rows, fields) {
-        if (err) throw err;
-    });
-    connection.end();
 });
 
 app.post('/reg', function(req, res){
@@ -144,15 +136,13 @@ app.post('/reg', function(req, res){
         inserts = [],
         username = req.body.username,
         password = req.body.password;
-
+    console.log(req.body);
     if (username && password) {
         pwdhash = md5(username + password);
         cookie = md5(Math.random() + "");
         sql = "INSERT INTO user VALUES (NULL, ?, ?, ?, 0)";
         inserts = [username, pwdhash, cookie];
-        sql = mysql.format(sql, inserts);
-        console.log(sql);
-        connection.query(sql, function(err, rows, fields) {
+        db.run(sql, inserts, function(err, rows) {
             if (err) throw err;
             onlineUsers[cookie] = {
                 username : username,

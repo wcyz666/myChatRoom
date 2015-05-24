@@ -3,3 +3,5 @@ node_modules/*
 .idea/workspace.xml
 .idea/*
 npm-debug.log
+user.db
+sqlite3.exe
