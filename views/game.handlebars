@@ -20,7 +20,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/me">Fun Run Web</a>
+            <a class="navbar-brand" href="/me">18-652 ChatRoom</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -29,7 +29,6 @@
                 <li class="dropdown">
                     <a id="username" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{me.username}}<span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
-                        <li><a href="/me/score">ScoreBoard</a></li>
                         <li><a href="/logout">Logout</a></li>
                     </ul>
                 </li>
@@ -45,7 +44,6 @@
     <ol class="breadcrumb">
         <li><a href="/me">Home</a></li>
         <li><a href="#">{{roomInfo.roomName}}</a></li>
-        <li><a href="#" id="mapName">{{roomInfo.roomMap}}</a></li>
     </ol>
     <div class="row">
         <div id="game" class="col-xs-9">
@@ -54,10 +52,6 @@
             <div class="row">
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        <button type="button" id="readyButton" data-loading-text="Wait for others..." class="btn btn-success col-xs-12" autocomplete="off">
-                            Ready
-                        </button>
-                        <br /><br />
                         <a type="button" class="btn btn-danger col-xs-12" id="exit">Exit</a>
                     </div>
                 </div>
@@ -93,16 +87,8 @@
     </div>
 </div>
 
-<div class="modal fade bs-example-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <h1 class="text-center">Game Start in <strong id="seconds">5</strong> Seconds.</h1>
-        </div>
-    </div>
-</div>
 
 </body>
-<script src="/javascripts/phaser.min.js"></script>
 <script src="/javascripts/jquery.min.js"></script>
 <script src="/javascripts/bootstrap.min.js"></script>
 <script src="/javascripts/messenger.min.js"></script>

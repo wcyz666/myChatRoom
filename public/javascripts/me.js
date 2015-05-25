@@ -42,12 +42,6 @@
                 xhr.onerror = function(){error()};
 
                 xhr.send(opt.data || null);
-            },
-            createQRcode : function(){
-                myLib.el(qrid).src = "https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=" + encodeURIComponent(curURL);
-            },
-            getCurrentUsers : function(){
-
             }
         };
     })();

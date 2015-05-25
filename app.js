@@ -55,7 +55,7 @@ app.get('/', function(req, res){
                     onlineUsers[req.cookies.id] = {
                         username : rows[0].username,
                         score: rows[0].score,
-                        isPlaying: false,
+                        isChatting: false,
                         currentRoom : -1
                     };
                     res.render("me", {
@@ -97,7 +97,7 @@ app.post('/login', function (req, res) {
                 onlineUsers[cookie] = {
                     username : rows[0].username,
                     score: rows[0].score,
-                    isPlaying: false,
+                    isChatting: false,
                     currentRoom : -1
                 };
                 db.run(sql, inserts, function(){
@@ -147,7 +147,7 @@ app.post('/reg', function(req, res){
             onlineUsers[cookie] = {
                 username : username,
                 score: 0,
-                isPlaying: false,
+                isChatting: false,
                 currentRoom : -1
             };
             res.cookie("id", cookie, {maxAge: 1000 * 86400});
@@ -185,15 +185,11 @@ app.post('/new', function(req, res){
     }
     var room = utils.getNewRoom(currentRooms);
     onlineUsers[req.cookies.id].currentRoom = room;
-    onlineUsers[req.cookies.id].isPlaying = true;
+    onlineUsers[req.cookies.id].isChatting = true;
     currentRooms[room] = {
         roomName : req.body.name,
-        roomMap: req.body.map,
-        players:
-            [onlineUsers[req.cookies.id].username],
-        readyPlayers: [],
-        arrivedPlayers: [],
-        isPlaying: false
+        chatters:
+            [onlineUsers[req.cookies.id].username]
     };
     console.log(currentRooms);
     res.redirect("/room/" + room);
@@ -205,21 +201,11 @@ app.get('/pick', function(req, res){
         res.render("login", {state : true});
         return;
     }
-    var key,
-        roomList = [],
-        roomRandom = 0;
-        count = 0;
-    for (key in currentRooms){
-        roomList.push(key);
-        count++;
-    }
-    roomRandom = Math.floor(Math.random() * count);
-
-    roomRandom = roomList[roomRandom];
+    var roomRandom = utils.getRandomRoom(currentRooms);
     onlineUsers[req.cookies.id].currentRoom = roomRandom;
-    onlineUsers[req.cookies.id].isPlaying = true;
-    if (currentRooms[roomRandom].players.indexOf(onlineUsers[req.cookies.id].username) == -1)
-        currentRooms[roomRandom].players.push(onlineUsers[req.cookies.id].username);
+    onlineUsers[req.cookies.id].isChatting = true;
+    if (currentRooms[roomRandom].chatters.indexOf(onlineUsers[req.cookies.id].username) == -1)
+        currentRooms[roomRandom].chatters.push(onlineUsers[req.cookies.id].username);
     console.log(currentRooms);
     res.redirect("/room/" + roomRandom);
 });
@@ -238,23 +224,23 @@ app.all('/room/:id([0-9]+)', function(req, res) {
         res.render("me", onlineUsers[req.cookies.id].username);
         return;
     }
-    if (!onlineUsers[req.cookies.id].isPlaying)
-        onlineUsers[req.cookies.id].isPlaying;
+    if (!onlineUsers[req.cookies.id].isChatting)
+        onlineUsers[req.cookies.id].isChatting;
     else
         if (onlineUsers[req.cookies.id].currentRoom != req.params.id) {
             res.redirect("/room/" + onlineUsers[req.cookies.id].currentRoom);
             return;
         }
-    players = currentRooms[req.params.id].players.slice();
+    chatters = currentRooms[req.params.id].chatters.slice();
 
-    if (players.indexOf(onlineUsers[req.cookies.id].username) == -1){
-        currentRooms[req.params.id].players.push(onlineUsers[req.cookies.id].username);
+    if (chatters.indexOf(onlineUsers[req.cookies.id].username) == -1){
+        currentRooms[req.params.id].chatters.push(onlineUsers[req.cookies.id].username);
     }
     else
-        players.splice(players.indexOf(onlineUsers[req.cookies.id].username), 1);
+        chatters.splice(chatters.indexOf(onlineUsers[req.cookies.id].username), 1);
     res.render("game", {
         roomInfo: currentRooms[req.params.id],
-        players: players,
+        chatters: chatters,
         me:
             onlineUsers[req.cookies.id]
     });
@@ -267,10 +253,10 @@ app.get('/room/exit/:id([0-9]+)', function(req, res){
     }
     var room = req.params.id;
     onlineUsers[req.cookies.id].currentRoom = -1;
-    onlineUsers[req.cookies.id].isPlaying = false;
+    onlineUsers[req.cookies.id].isChatting = false;
     if (currentRooms[room]) {
-        currentRooms[room].players.splice(currentRooms[room].players.indexOf(onlineUsers[req.cookies.id].username), 1);
-        if (currentRooms[room].players.length == 0)
+        currentRooms[room].chatters.splice(currentRooms[room].chatters.indexOf(onlineUsers[req.cookies.id].username), 1);
+        if (currentRooms[room].chatters.length == 0)
             delete currentRooms[room];
         console.log(currentRooms);
     }
