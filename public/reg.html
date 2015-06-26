@@ -12,7 +12,7 @@
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
             <div class="alert alert-danger">
-                </button><h4>Password not match</h4>
+                </button><h4 id="warningText">Password not match</h4>
             </div>
         </div>
     </div>
@@ -21,12 +21,14 @@
 	<div class="container">
         <div id="login-wraper">
     <form class="form login-form" role="form" method="POST" action="/reg">
-    <legend>Sign up<span class="blue"> Fun Run Web</span></legend>
-
+    <h1>Sign up<span class="blue"> Chat Room </span></h1>
+    <hr/>
     <div class="body col-md-12">
     <div class="form-group col-md-offset-1 col-md-10">
+        <label class="control-label pull-left invisible" for="username" id="usernameHint">Has been registered</label>
+    <input type="text" required="required" class="form-control input-lg" name="username" id="username" placeholder="Username">
 
-    <input type="text" required="required" class="form-control input-lg" name="username" placeholder="Username">
+
     </div>
         <div class="form-group col-md-offset-1 col-md-10">
 

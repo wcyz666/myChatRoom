@@ -9,7 +9,8 @@ var express = require('express'),
     db = new sqlite3.Database('user.db'),
     md5 = require('MD5'),
     socketIO = require('socket.io'),
-    api = require("./routes/api");
+    api = require("./routes/api"),
+    fs = require("fs");
 
 
 app.engine("handlebars", handlebars.engine);
@@ -54,7 +55,6 @@ app.get('/', function(req, res){
                 if (rows.length > 0){
                     onlineUsers[req.cookies.id] = {
                         username : rows[0].username,
-                        score: rows[0].score,
                         isChatting: false,
                         currentRoom : -1
                     };
@@ -96,7 +96,6 @@ app.post('/login', function (req, res) {
                 inserts = [cookie, pwdhash];
                 onlineUsers[cookie] = {
                     username : rows[0].username,
-                    score: rows[0].score,
                     isChatting: false,
                     currentRoom : -1
                 };
@@ -117,6 +116,18 @@ app.post('/login', function (req, res) {
     }
 });
 
+app.get('/nameValidate', function(req, res) {
+    console.log(req.query.name);
+    db.all('SELECT * FROM user WHERE username = ?', [req.query.name], function(err, rows) {
+        if (err) throw err;
+
+        if (rows.length == 0)
+            res.json({isValid : true});
+        else
+            res.json({isValid : false});
+    });
+});
+
 /* GET users listing. */
 app.get('/init', function(req, res) {
     db.serialize(function() {
@@ -128,6 +139,7 @@ app.get('/init', function(req, res) {
         res.redirect("/");
     });
 });
+
 
 app.post('/reg', function(req, res){
     var pwdhash,
@@ -146,7 +158,6 @@ app.post('/reg', function(req, res){
             if (err) throw err;
             onlineUsers[cookie] = {
                 username : username,
-                score: 0,
                 isChatting: false,
                 currentRoom : -1
             };
@@ -297,6 +308,4 @@ io.on( 'connection', function( socket ) {
         socket.broadcast.to(data.room).emit("exitClient", data.username);
         console.log("exit", data);
     });
-
-
-} );
+});
