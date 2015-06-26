@@ -41,26 +41,23 @@ app.use("/api", api);
 
 app.get('/', function(req, res){
 
-    var i = 0;
-    if (req.cookies.id){
-        if (req.cookies.id in onlineUsers) {
-            res.cookie("id", req.cookies.id, {maxAge: 1000 * 86400});
-            res.render("me", {
-                me : onlineUsers[req.cookies.id].username
-            });
+    var i = 0,
+         id = req.cookies.id;
+    if (id){
+        if (id in onlineUsers) {
+            res.cookie("id", id, {maxAge: 1000 * 86400});
+            res.redirect("me");
         }
         else {
-            db.all("SELECT * FROM user WHERE cookie = ?", [req.cookies.id], function(err, rows) {
+            db.all("SELECT * FROM user WHERE cookie = ?", [id], function(err, rows) {
                 if (err) throw err;
                 if (rows.length > 0){
-                    onlineUsers[req.cookies.id] = {
+                    onlineUsers[id] = {
                         username : rows[0].username,
                         isChatting: false,
                         currentRoom : -1
                     };
-                    res.render("me", {
-                        me : onlineUsers[req.cookies.id].username
-                    });
+                    res.redirect("me");
                 }
                 else {
                     res.cookie("id", "",{maxAge: -10000});
@@ -101,9 +98,7 @@ app.post('/login', function (req, res) {
                 };
                 db.run(sql, inserts, function(){
                     res.cookie("id", cookie, {maxAge: 1000 * 86400});
-                    res.render("me",  {
-                        me : onlineUsers[cookie].username
-                    });
+                    res.redirect("me");
                 });
             }
             else {
@@ -162,7 +157,7 @@ app.post('/reg', function(req, res){
                 currentRoom : -1
             };
             res.cookie("id", cookie, {maxAge: 1000 * 86400});
-            res.render("me", {me : username});
+            res.redirect("me");
         });
     }
     else {
@@ -171,11 +166,15 @@ app.post('/reg', function(req, res){
 });
 
 app.get('/me', function(req, res) {
+    var id = req.cookies.id;
     console.log(onlineUsers);
-    if (!onlineUsers[req.cookies.id])
+
+    if (!onlineUsers[id])
         res.redirect("/");
-    else
-        res.render("me", {me : onlineUsers[req.cookies.id].username});
+    else {
+        utils.changeUserStatus(onlineUsers, currentRooms, id);
+        res.render("me", {me : onlineUsers[id].username});
+    }
 });
 
 app.get('/logout', function(req, res) {
@@ -184,23 +183,25 @@ app.get('/logout', function(req, res) {
 });
 
 app.get('/new', function(req, res, next){
-    if (!onlineUsers[req.cookies.id])
+    var id = req.cookies.id;
+    if (!onlineUsers[id])
         res.redirect("/");
-    res.render("me", {me : onlineUsers[req.cookies.id].username});
+    res.render("me", {me : onlineUsers[id].username});
 });
 
 app.post('/new', function(req, res){
-    if (!onlineUsers[req.cookies.id]) {
+    var id = req.cookies.id;
+    if (!onlineUsers[id]) {
         res.render("login", {state : true});
         return;
     }
     var room = utils.getNewRoom(currentRooms);
-    onlineUsers[req.cookies.id].currentRoom = room;
-    onlineUsers[req.cookies.id].isChatting = true;
+    onlineUsers[id].currentRoom = room;
+    onlineUsers[id].isChatting = true;
     currentRooms[room] = {
         roomName : req.body.name,
         chatters:
-            [onlineUsers[req.cookies.id].username]
+            [onlineUsers[id].username]
     };
     console.log(currentRooms);
     res.redirect("/room/" + room);
@@ -208,15 +209,16 @@ app.post('/new', function(req, res){
 
 
 app.get('/pick', function(req, res){
-    if (!onlineUsers[req.cookies.id]) {
+    var id = req.cookies.id;
+    if (!onlineUsers[id]) {
         res.render("login", {state : true});
         return;
     }
     var roomRandom = utils.getRandomRoom(currentRooms);
-    onlineUsers[req.cookies.id].currentRoom = roomRandom;
-    onlineUsers[req.cookies.id].isChatting = true;
-    if (currentRooms[roomRandom].chatters.indexOf(onlineUsers[req.cookies.id].username) == -1)
-        currentRooms[roomRandom].chatters.push(onlineUsers[req.cookies.id].username);
+    onlineUsers[id].currentRoom = roomRandom;
+    onlineUsers[id].isChatting = true;
+    if (currentRooms[roomRandom].chatters.indexOf(onlineUsers[id].username) == -1)
+        currentRooms[roomRandom].chatters.push(onlineUsers[id].username);
     console.log(currentRooms);
     res.redirect("/room/" + roomRandom);
 });
@@ -225,48 +227,50 @@ app.get('/pick', function(req, res){
 
 /* GET users listing. */
 app.all('/room/:id([0-9]+)', function(req, res) {
+    var id = req.cookies.id;
     console.log(onlineUsers);
     console.log(currentRooms);
-    if (!onlineUsers[req.cookies.id]){
+    if (!onlineUsers[id]){
         res.redirect("/");
         return;
     }
     if (!currentRooms[req.params.id]) {
-        res.render("me", onlineUsers[req.cookies.id].username);
+        res.redirect("me");
         return;
     }
-    if (!onlineUsers[req.cookies.id].isChatting)
-        onlineUsers[req.cookies.id].isChatting;
+    if (!onlineUsers[id].isChatting)
+        onlineUsers[id].isChatting;
     else
-        if (onlineUsers[req.cookies.id].currentRoom != req.params.id) {
-            res.redirect("/room/" + onlineUsers[req.cookies.id].currentRoom);
+        if (onlineUsers[id].currentRoom != req.params.id) {
+            res.redirect("/room/" + onlineUsers[id].currentRoom);
             return;
         }
     chatters = currentRooms[req.params.id].chatters.slice();
 
-    if (chatters.indexOf(onlineUsers[req.cookies.id].username) == -1){
-        currentRooms[req.params.id].chatters.push(onlineUsers[req.cookies.id].username);
+    if (chatters.indexOf(onlineUsers[id].username) == -1){
+        currentRooms[req.params.id].chatters.push(onlineUsers[id].username);
     }
     else
-        chatters.splice(chatters.indexOf(onlineUsers[req.cookies.id].username), 1);
+        chatters.splice(chatters.indexOf(onlineUsers[id].username), 1);
     res.render("game", {
         roomInfo: currentRooms[req.params.id],
         chatters: chatters,
         me:
-            onlineUsers[req.cookies.id]
+            onlineUsers[id]
     });
 });
 
 app.get('/room/exit/:id([0-9]+)', function(req, res){
-    if (!onlineUsers[req.cookies.id]){
+    var id = req.cookies.id;
+    if (!onlineUsers[id]){
         res.redirect("/");
         return;
     }
     var room = req.params.id;
-    onlineUsers[req.cookies.id].currentRoom = -1;
-    onlineUsers[req.cookies.id].isChatting = false;
+    onlineUsers[id].currentRoom = -1;
+    onlineUsers[id].isChatting = false;
     if (currentRooms[room]) {
-        currentRooms[room].chatters.splice(currentRooms[room].chatters.indexOf(onlineUsers[req.cookies.id].username), 1);
+        currentRooms[room].chatters.splice(currentRooms[room].chatters.indexOf(onlineUsers[id].username), 1);
         if (currentRooms[room].chatters.length == 0)
             delete currentRooms[room];
         console.log(currentRooms);
