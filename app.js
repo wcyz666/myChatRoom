@@ -209,54 +209,49 @@ app.post('/new', function(req, res){
 
 
 app.get('/pick', function(req, res){
-    var id = req.cookies.id;
-    if (!onlineUsers[id]) {
-        res.render("login", {state : true});
+    var id = req.cookies.id,
+        me = onlineUsers[id];
+    if (!me) {
+        res.redirect("/login");
         return;
     }
     var roomRandom = utils.getRandomRoom(currentRooms);
-    onlineUsers[id].currentRoom = roomRandom;
-    onlineUsers[id].isChatting = true;
-    if (currentRooms[roomRandom].chatters.indexOf(onlineUsers[id].username) == -1)
-        currentRooms[roomRandom].chatters.push(onlineUsers[id].username);
+    me.currentRoom = roomRandom;
+    me.isChatting = true;
+    if (currentRooms[roomRandom].chatters.indexOf(me.username) == -1)
+        currentRooms[roomRandom].chatters.push(me.username);
     console.log(currentRooms);
     res.redirect("/room/" + roomRandom);
 });
 
-
-
 /* GET users listing. */
 app.all('/room/:id([0-9]+)', function(req, res) {
-    var id = req.cookies.id;
+    var userId = req.cookies.id,
+        me = onlineUsers[userId],
+        roomId = req.params.id,
+        chatters;
+
     console.log(onlineUsers);
     console.log(currentRooms);
-    if (!onlineUsers[id]){
+
+    if (!me || !currentRooms[roomId]){
         res.redirect("/");
         return;
     }
-    if (!currentRooms[req.params.id]) {
-        res.redirect("me");
-        return;
-    }
-    if (!onlineUsers[id].isChatting)
-        onlineUsers[id].isChatting;
-    else
-        if (onlineUsers[id].currentRoom != req.params.id) {
-            res.redirect("/room/" + onlineUsers[id].currentRoom);
-            return;
-        }
-    chatters = currentRooms[req.params.id].chatters.slice();
 
-    if (chatters.indexOf(onlineUsers[id].username) == -1){
-        currentRooms[req.params.id].chatters.push(onlineUsers[id].username);
+    if (me.isChatting && roomId != me.currentRoom) {
+        utils.changeUserStatus(onlineUsers, currentRooms, userId);
     }
-    else
-        chatters.splice(chatters.indexOf(onlineUsers[id].username), 1);
+    chatters = currentRooms[roomId].chatters;
+    me.isChatting = true;
+    me.currentRoom = roomId;
+    if (chatters.indexOf(me.username) == -1) {
+        chatters.push(me.username);
+    }
     res.render("game", {
-        roomInfo: currentRooms[req.params.id],
+        roomInfo: currentRooms[roomId],
         chatters: chatters,
-        me:
-            onlineUsers[id]
+        me: me
     });
 });
 
