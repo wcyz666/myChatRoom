@@ -6,6 +6,7 @@
 
     <link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/stylesheets/messenger.css">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
     <link rel="stylesheet" type="text/css" href="/stylesheets/messenger-theme-future.css">
 </head>
 <body>
@@ -48,7 +49,7 @@
     </ol>
         </div>
     <div class="row">
-        <div id="game" class="col-xs-9 panel panel-default">
+        <div id="game" class="col-sm-9 panel panel-default">
             <div class="panel-heading">Panel heading without title</div>
             <div class="panel-body">
                 <div class="media">
@@ -65,11 +66,9 @@
                         <img class="media-object" src="/images/icon48.png" alt="...">
                     </div>
                     <div class="media-body pull-right col-xs-8">
-                        <h4 class="media-heading text-right">Media heading</h4>
                         <p class="bg-primary text-right col-xs-12">aaaaaaaaaaaaaaaaaa  aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
                     </div>
                     <div class="clearfix"></div>
-                    <p class="text-center small">Friday, June 16, 2014, at 10:52 AM</p>
                     <div class="pull-left">
                         <img class="media-object" src="/images/icon48.png" alt="...">
                     </div>
@@ -77,16 +76,13 @@
                         <h4 class="media-heading">Media heading</h4>
                         <p class="bg-info  col-xs-8">aaaaaaasa            aaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaa aaaaaaa</p>
                     </div>
-                    <p class="text-center small">Friday, June 16, 2014, at 10:52 AM</p>
                     <div class="pull-right">
                         <img class="media-object" src="/images/icon48.png" alt="...">
                     </div>
                     <div class="media-body pull-right col-xs-8">
-                        <h4 class="media-heading text-right">Media heading</h4>
                         <p class="bg-primary text-right col-xs-12">aaaaaaaaaaaaaaaaaa  aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
                     </div>
                     <div class="clearfix"></div>
-                    <p class="text-center small">Friday, June 16, 2014, at 10:52 AM</p>
                     <div class="pull-left">
                             <img class="media-object" src="/images/icon48.png" alt="...">
                     </div>
@@ -99,14 +95,13 @@
                         <img class="media-object" src="/images/icon48.png" alt="...">
                     </div>
                     <div class="media-body pull-right col-xs-8">
-                        <h4 class="media-heading text-right">Media heading</h4>
                         <p class="bg-primary text-right col-xs-12">aaaaaaaaaaaaaaaaaa  aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
                     </div>
                     <div class="clearfix"></div>
                 </div>
             </div>
         </div>
-        <div class="col-xs-3">
+        <div class="col-sm-3">
             <div class="row">
                 <div class="panel panel-default">
                     <div class="panel-body">
@@ -116,18 +111,22 @@
                 <div class="panel panel-warning">
                     <div class="panel-heading">Player List</div>
                     <div class="panel-body">
-                        <ul class="nav nav-pills nav-stacked" id="players">
-                            <li role="presentation" class="active">
-                                <h3><span class="label label-primary">{{me.username}} <span class="glyphicon glyphicon-user" aria-hidden="true"></span></span></h3>
+                        <ul class="list-unstyled" id="players">
+                            <li class="li-name">
+                                <span class="label label-primary player-name">{{me.username}}
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true">
+                                    </span>
+                                </span>
                             </li>
-                            {{#each players}}
-                            <li role="presentation" class="active">
-                                <h3><span class="label label-default player-name">{{.}}</span>
+                            {{#each chatters}}
+                            <li class="li-name">
+                                <span  class="label label-default player-name">{{.}}</span>
                                 <button class="btn btn-success pull-right btn-sm" type="button">
                                     <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Friend
                                 </button>
-                                </h3>
+
                             </li>
+
                                 {{/each}}
                         </ul>
                     </div>

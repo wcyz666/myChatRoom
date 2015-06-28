@@ -64,10 +64,9 @@ window.onload = function(){
             },
             createNewUser: function(user){
                 var html = "";
-                html += '<li role="presentation" class="active">';
-                html += '<h3><span class="label label-default pull-left player-name">' + user + '</span>';
+                html += '<li class="li-name"><span class="label label-default player-name">' + user + '</span>';
                 html += '<button class="btn btn-success pull-right btn-sm" type="button">';
-                html += '<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Friend </button></h3></li>';
+                html += '<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Friend </button></li>';
                 return $(html);
             }
         };
@@ -78,7 +77,7 @@ window.onload = function(){
 
     (function (){
 
-        socket = io();
+        socket = io("http://127.0.0.1:3000");
         socket.on("newClient", function(newUser){
             if ($(".player-name").text().indexOf(newUser) != -1 || newUser == myLib.username) return;
 
@@ -92,6 +91,7 @@ window.onload = function(){
 
 
         socket.on("exitClient", function(newUser){
+            console.log(newUser);
             $("li:contains(" + newUser.trim() + ")").remove();
             msg.post({
                 message: "User " + newUser + " exit !",
