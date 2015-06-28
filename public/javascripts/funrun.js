@@ -1,7 +1,9 @@
 
 window.onload = function(){
 
-    var socket;
+    var socket,
+        content = $('#chatroom-content'),
+        text = $('#chatroom-text');
 
     var myLib = (function(){
 
@@ -12,6 +14,12 @@ window.onload = function(){
 
         return {
             roomNum: roomNum,
+            getWordsTemplate : function (userID, words){
+                var wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
+                return wordsToHtml + '<div class="pull-right"><img class="media-object" src="/images/icon48.png" alt="">'+
+                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary text-right col-xs-12">' + words +
+                '</p></div><div class="clearfix"></div>';
+            },
             username: userName,
             el : function(id, rg){
                 var range = rg || document;
@@ -106,6 +114,11 @@ window.onload = function(){
         username: myLib.username
     });
 
+    $('#sendMsg').on('click', function(event) {
+        var myWords = myLib.getWordsTemplate("aaa", text.val());
+        text.val("");
+        content.append(myWords);
+    });
 
     $('#exit').on('click', function(event){
         socket.emit('exit', {

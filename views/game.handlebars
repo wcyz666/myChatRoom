@@ -11,37 +11,36 @@
 </head>
 <body>
 
-<nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
-    <div class="container-fluid">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/me">18-652 ChatRoom</a>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                    <a id="username" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{me.username}}<span class="caret"></span></a>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><a href="/logout">Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div><!-- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
-</nav>
-<br />
-<br /><br />
-
-
 <div class="container">
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/me">18-652 ChatRoom</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a id="username" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{me.username}}<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+    <br />
+    <br /><br />
     <div class="row">
     <ol class="breadcrumb">
         <li><a href="/me">Home</a></li>
@@ -49,10 +48,33 @@
     </ol>
         </div>
     <div class="row">
-        <div id="game" class="col-sm-9 panel panel-default">
-            <div class="panel-heading">Panel heading without title</div>
+        <div class="panel panel-warning col-xs-3">
+            <div class="panel-heading">Player List</div>
             <div class="panel-body">
-                <div class="media">
+                <ul class="list-unstyled" id="players">
+                    <li class="li-name">
+                                <span class="label label-primary player-name">{{me.username}}
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true">
+                                    </span>
+                                </span>
+                    </li>
+                    {{#each chatters}}
+                        <li class="li-name">
+                            <span  class="label label-default player-name">{{.}}</span>
+                            <button class="btn btn-success pull-right btn-sm" type="button">
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Friend
+                            </button>
+
+                        </li>
+
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+        <div id="game" class="col-sm-6 col-xs-9 panel panel-default">
+            <div class="panel-heading">Panel heading without title</div>
+            <div class="panel-body chatroom-body">
+                <div class="media" id="chatroom-content">
                     <p class="text-center small">Friday, June 16, 2014, at 10:52 AM</p>
                     <div class="pull-left">
                         <img class="media-object" src="/images/icon48.png" alt="...">
@@ -61,13 +83,7 @@
                         <h4 class="media-heading">Media heading</h4>
                         <p class="bg-info  col-xs-8">aaaaaaaaa</p>
                     </div>
-                    <p class="text-center small">Friday, June 16, 2014, at 10:52 AM</p>
-                    <div class="pull-right">
-                        <img class="media-object" src="/images/icon48.png" alt="...">
-                    </div>
-                    <div class="media-body pull-right col-xs-8">
-                        <p class="bg-primary text-right col-xs-12">aaaaaaaaaaaaaaaaaa  aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
-                    </div>
+
                     <div class="clearfix"></div>
                     <div class="pull-left">
                         <img class="media-object" src="/images/icon48.png" alt="...">
@@ -76,13 +92,7 @@
                         <h4 class="media-heading">Media heading</h4>
                         <p class="bg-info  col-xs-8">aaaaaaasa            aaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaa aaaaaaa</p>
                     </div>
-                    <div class="pull-right">
-                        <img class="media-object" src="/images/icon48.png" alt="...">
-                    </div>
-                    <div class="media-body pull-right col-xs-8">
-                        <p class="bg-primary text-right col-xs-12">aaaaaaaaaaaaaaaaaa  aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
-                    </div>
-                    <div class="clearfix"></div>
+
                     <div class="pull-left">
                             <img class="media-object" src="/images/icon48.png" alt="...">
                     </div>
@@ -90,14 +100,25 @@
                         <h4 class="media-heading">Media heading</h4>
                         <p class="bg-info  col-xs-8">aaaaaaaaa</p>
                     </div>
-                    <p class="text-center small">Friday, June 16, 2014, at 10:52 AM</p>
-                    <div class="pull-right">
-                        <img class="media-object" src="/images/icon48.png" alt="...">
+
+                </div>
+            </div>
+            <div class="panel-footer">
+
+                <div class="input-group">
+                    <input type="text" id="chatroom-text" class="form-control" aria-label="...">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-send" aria-hidden="true" id="sendMsg">
+                                    </span></button>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
                     </div>
-                    <div class="media-body pull-right col-xs-8">
-                        <p class="bg-primary text-right col-xs-12">aaaaaaaaaaaaaaaaaa  aaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</p>
-                    </div>
-                    <div class="clearfix"></div>
                 </div>
             </div>
         </div>
@@ -106,29 +127,6 @@
                 <div class="panel panel-default">
                     <div class="panel-body">
                         <a type="button" class="btn btn-danger col-xs-12" id="exit">Exit</a>
-                    </div>
-                </div>
-                <div class="panel panel-warning">
-                    <div class="panel-heading">Player List</div>
-                    <div class="panel-body">
-                        <ul class="list-unstyled" id="players">
-                            <li class="li-name">
-                                <span class="label label-primary player-name">{{me.username}}
-                                    <span class="glyphicon glyphicon-user" aria-hidden="true">
-                                    </span>
-                                </span>
-                            </li>
-                            {{#each chatters}}
-                            <li class="li-name">
-                                <span  class="label label-default player-name">{{.}}</span>
-                                <button class="btn btn-success pull-right btn-sm" type="button">
-                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Friend
-                                </button>
-
-                            </li>
-
-                                {{/each}}
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -143,7 +141,9 @@
         </div>
     </div>
 </div>
-
+<div class="container">
+    <footer class="footer"><p class="text-center">Travers, Wang Cheng, June 2015. All Right reserved.</p></footer>
+</div>
 
 </body>
 <script src="/javascripts/jquery.min.js"></script>

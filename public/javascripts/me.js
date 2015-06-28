@@ -5,6 +5,7 @@
     var myLib = (function(){
         var curURL = window.location.href,
             roomNum = /^.*\/(.*)$/.exec(window.location.href)[1];
+
         return {
             roomNum: roomNum,
             el : function(id, rg){
@@ -66,11 +67,8 @@
             for (roomNum in data) {
                 tableBody += "<tr><td>" + roomNum + "</td>";
                 tableBody += "<td>" + data[roomNum].roomName + "</td>";
-                tableBody += "<td>" + data[roomNum].roomMap + "</td>";
-                if (data[roomNum].players.length <= 3)
-                    tableBody += "<td><a type='button' class='btn btn-success' href='/room/" + roomNum + "'>Enter</a></td>";
-                else
-                    tableBody += "<td><a type='button' class='btn btn-success disabled' href='/room/" + roomNum + "'>Enter</a></td></tr>";
+                tableBody += "<td>" + data[roomNum].chatters.length + "</td>";
+                tableBody += "<td><a type='button' class='btn btn-success btn-sm' href='/room/" + roomNum + "'>Enter</a></td>";
             }
             myLib.el("table-body").innerHTML = tableBody;
         });
@@ -84,5 +82,9 @@
             else
                 window.location.href = "/pick";
         });
+    });
+
+    $('#sendMsg').on('click', function(event) {
+
     });
 })();

@@ -2,3 +2,7 @@
     font-size:20px;
     margin-bottom: 5px;
 }
+.chatroom-body {
+    height: 500px;
+    overflow: scroll;
+}
