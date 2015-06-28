@@ -10,12 +10,18 @@ window.onload = function(){
         var qrid = "qrcode",
             curURL = window.location.href,
             roomNum = /^.*\/(.*)$/.exec(window.location.href)[1],
-            userName = $("#username").text();
+            userName = $("#username").text(),
+            lastTime = new Date();
 
         return {
             roomNum: roomNum,
             getWordsTemplate : function (userID, words){
-                var wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
+                var now = new Date(),
+                    wordsToHtml = '<p class="text-center small" id="datetime"></p>';
+                if ((now - lastTime) / 1000 > 120 ) {
+                    wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
+                }
+                lastTime = now;
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" src="/images/icon48.png" alt="">'+
                 '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary text-right col-xs-12">' + words +
                 '</p></div><div class="clearfix"></div>';
@@ -114,10 +120,21 @@ window.onload = function(){
         username: myLib.username
     });
 
+    $(document).keydown(function(event){
+        if (event.keyCode == 13 || event.keyCode == 108) {
+            $('#sendMsg').click();
+        }
+    });
     $('#sendMsg').on('click', function(event) {
+        if (text.val() === "")
+            return false;
         var myWords = myLib.getWordsTemplate("aaa", text.val());
         text.val("");
         content.append(myWords);
+        content.animate(
+            {
+                scrollTop:content[0].scrollHeight
+            }, 500);
     });
 
     $('#exit').on('click', function(event){
