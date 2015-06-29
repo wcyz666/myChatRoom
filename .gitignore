@@ -5,3 +5,4 @@ node_modules/*
 npm-debug.log
 user.db
 sqlite3.exe
+/public/avatar

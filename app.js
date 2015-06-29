@@ -10,7 +10,10 @@ var express = require('express'),
     md5 = require('MD5'),
     socketIO = require('socket.io'),
     api = require("./routes/api"),
-    fs = require("fs");
+    fs = require("fs"),
+    im = require('imagemagick'),
+    multipart = require('connect-multiparty'),
+    multipartMiddleware = multipart();
 
 
 app.engine("handlebars", handlebars.engine);
@@ -92,6 +95,7 @@ app.post('/login', function (req, res) {
                 sql = "UPDATE user SET cookie = ? WHERE password = ?";
                 inserts = [cookie, pwdhash];
                 onlineUsers[cookie] = {
+                    userID: rows[0].id,
                     username : rows[0].username,
                     isChatting: false,
                     currentRoom : -1
@@ -136,14 +140,15 @@ app.get('/init', function(req, res) {
 });
 
 
-app.post('/reg', function(req, res){
+app.post('/reg', multipartMiddleware, function(req, res){
+    console.log(req.files);
     var pwdhash,
         cookie,
         sql = "",
         inserts = [],
         username = req.body.username,
-        password = req.body.password;
-    console.log(req.body);
+        password = req.body.password,
+        avatar = req.files.avatar;
     if (username && password) {
         pwdhash = md5(username + password);
         cookie = md5(Math.random() + "");
@@ -151,13 +156,36 @@ app.post('/reg', function(req, res){
         inserts = [username, pwdhash, cookie];
         db.run(sql, inserts, function(err, rows) {
             if (err) throw err;
-            onlineUsers[cookie] = {
-                username : username,
-                isChatting: false,
-                currentRoom : -1
-            };
-            res.cookie("id", cookie, {maxAge: 1000 * 86400});
-            res.redirect("me");
+            db.get("SELECT id FROM user WHERE username = ?", [username], function(err, row) {
+                if (err) throw err;
+                console.log(row);
+
+                onlineUsers[cookie] = {
+                    userID :row.id,
+                    username : username,
+                    isChatting: false,
+                    currentRoom : -1
+                };
+                fs.readFile(avatar.path, function (err, data) {
+                    var path = __dirname + "/public/avatar/" + row.id + '.png';
+
+                    fs.writeFile(path, data, function (err) {
+
+                        /*im.resize({
+                                srcPath: avatar.path,
+                                dstPath: path,
+                                width:   64
+                            }, function(err, stdout, stderr){
+                                if (err) throw err;
+                                console.log('resized image to fit within 200x200px');
+                            });
+                         */
+                         res.cookie("id", cookie, {maxAge: 1000 * 86400});
+                         res.redirect("me");
+                    });
+
+                });
+            });
         });
     }
     else {
@@ -173,7 +201,8 @@ app.get('/me', function(req, res) {
         res.redirect("/");
     else {
         utils.changeUserStatus(onlineUsers, currentRooms, id);
-        res.render("me", {me : onlineUsers[id].username});
+        res.render("me", {me : onlineUsers[id].username,
+                            id: onlineUsers[id].userID});
     }
 });
 
