@@ -26,6 +26,17 @@ window.onload = function(){
                 '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary text-right col-xs-12">' + words +
                 '</p></div><div class="clearfix"></div>';
             },
+            getOtherWordsTemplate : function (username, words, userID){
+                var now = new Date(),
+                    wordsToHtml = '<p class="text-center small" id="datetime"></p>';
+                if ((now - lastTime) / 1000 > 120 ) {
+                    wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
+                }
+                lastTime = now;
+                return wordsToHtml + '<div class="pull-left"><img class="media-object" src="/images/icon48.png" alt="...">' +
+                '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info  col-xs-8">' + words +
+                '</p></div><div class="clearfix"></div>';
+            },
             username: userName,
             el : function(id, rg){
                 var range = rg || document;
@@ -114,43 +125,58 @@ window.onload = function(){
             });
         });
 
+        socket.on("otherWords", function(newWords){
+            console.log(newWords);
+            var otherWords = myLib.getOtherWordsTemplate(newWords.username, newWords.words, newWords);
+            content.append(otherWords);
+            content.animate(
+                {
+                    scrollTop:content[0].scrollHeight
+                }, 500);
+        });
 
-    socket.emit("join", {
-        room: myLib.roomNum,
-        username: myLib.username
-    });
-
-    $(document).keydown(function(event){
-        if (event.keyCode == 13 || event.keyCode == 108) {
-            $('#sendMsg').click();
-        }
-    });
-    $('#sendMsg').on('click', function(event) {
-        if (text.val() === "")
-            return false;
-        var myWords = myLib.getWordsTemplate("aaa", text.val());
-        text.val("");
-        content.append(myWords);
-        content.animate(
-            {
-                scrollTop:content[0].scrollHeight
-            }, 500);
-    });
-
-    $('#exit').on('click', function(event){
-        socket.emit('exit', {
+        socket.emit("join", {
             room: myLib.roomNum,
             username: myLib.username
         });
-        return true;
-    });
 
-    return {
-        init : function () {
-            myLib.createQRcode();
-            myLib.el('exit').setAttribute("href", "/room/exit/" + myLib.roomNum);
-        }
-    };
+        $(document).keydown(function(event){
+            if (event.keyCode == 13 || event.keyCode == 108) {
+                $('#sendMsg').click();
+            }
+        });
+        $('#sendMsg').on('click', function(event) {
+
+            if (text.val() === "")
+                return false;
+            socket.emit('sendWords', {
+                room: myLib.roomNum,
+                username: myLib.username,
+                words: text.val()
+            });
+            var myWords = myLib.getWordsTemplate("aaa", text.val());
+            text.val("");
+            content.append(myWords);
+            content.animate(
+                {
+                    scrollTop:content[0].scrollHeight
+                }, 500);
+        });
+
+        $('#exit').on('click', function(event){
+            socket.emit('exit', {
+                room: myLib.roomNum,
+                username: myLib.username
+            });
+            return true;
+        });
+
+        return {
+            init : function () {
+                myLib.createQRcode();
+                myLib.el('exit').setAttribute("href", "/room/exit/" + myLib.roomNum);
+            }
+        };
     })().init();
 };
 

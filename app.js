@@ -307,4 +307,10 @@ io.on( 'connection', function( socket ) {
         socket.broadcast.to(data.room).emit("exitClient", data.username);
         console.log("exit", data);
     });
+
+    socket.on('sendWords', function(data){
+        socket.join(data.room);
+        socket.broadcast.to(data.room).emit('otherWords', data);
+        console.log("words", data);
+    });
 });
