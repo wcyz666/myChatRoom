@@ -3,7 +3,8 @@ window.onload = function(){
 
     var socket,
         content = $('#chatroom-content'),
-        text = $('#chatroom-text');
+        text = $('#chatroom-text'),
+        userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1];
 
     var myLib = (function(){
 
@@ -14,15 +15,16 @@ window.onload = function(){
             lastTime = new Date();
 
         return {
+            userID: userID,
             roomNum: roomNum,
-            getWordsTemplate : function (userID, words){
+            getWordsTemplate : function (words){
                 var now = new Date(),
                     wordsToHtml = '<p class="text-center small" id="datetime"></p>';
                 if ((now - lastTime) / 1000 > 120 ) {
                     wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
                 }
                 lastTime = now;
-                return wordsToHtml + '<div class="pull-right"><img class="media-object" src="/images/icon48.png" alt="">'+
+                return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
                 '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary text-right col-xs-12">' + words +
                 '</p></div><div class="clearfix"></div>';
             },
@@ -33,7 +35,7 @@ window.onload = function(){
                     wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
                 }
                 lastTime = now;
-                return wordsToHtml + '<div class="pull-left"><img class="media-object" src="/images/icon48.png" alt="...">' +
+                return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
                 '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info  col-xs-8">' + words +
                 '</p></div><div class="clearfix"></div>';
             },
@@ -127,7 +129,7 @@ window.onload = function(){
 
         socket.on("otherWords", function(newWords){
             console.log(newWords);
-            var otherWords = myLib.getOtherWordsTemplate(newWords.username, newWords.words, newWords);
+            var otherWords = myLib.getOtherWordsTemplate(newWords.username, newWords.words, newWords.userID);
             content.append(otherWords);
             content.animate(
                 {
@@ -152,9 +154,10 @@ window.onload = function(){
             socket.emit('sendWords', {
                 room: myLib.roomNum,
                 username: myLib.username,
-                words: text.val()
+                words: text.val(),
+                userID : myLib.userID
             });
-            var myWords = myLib.getWordsTemplate("aaa", text.val());
+            var myWords = myLib.getWordsTemplate(text.val());
             text.val("");
             content.append(myWords);
             content.animate(
