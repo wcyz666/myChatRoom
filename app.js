@@ -56,6 +56,7 @@ app.get('/', function(req, res){
                 if (err) throw err;
                 if (rows.length > 0){
                     onlineUsers[id] = {
+                        userID: rows[0].id,
                         username : rows[0].username,
                         isChatting: false,
                         currentRoom : -1
