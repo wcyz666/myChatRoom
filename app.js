@@ -13,7 +13,8 @@ var express = require('express'),
     fs = require("fs"),
     im = require('imagemagick'),
     multipart = require('connect-multiparty'),
-    multipartMiddleware = multipart();
+    multipartMiddleware = multipart(),
+    uuid = require('node-uuid');
 
 
 app.engine("handlebars", handlebars.engine);
@@ -255,6 +256,24 @@ app.get('/pick', function(req, res){
     res.redirect("/room/" + roomRandom);
 });
 
+app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
+    var image = req.files.image,
+        ext = '.' + req.files.image.name.split(".")[1],
+        imageID = uuid.v4();
+    fs.readFile(image.path, function (err, data) {
+        var path = __dirname + "/public/userImages/" + imageID + ext;
+
+        fs.writeFile(path, data, function (err) {
+            res.json({
+                status: "OK",
+                imageName: imageID + ext
+            });
+        });
+
+    });
+});
+
+
 /* GET users listing. */
 app.all('/room/:id([0-9]+)', function(req, res) {
     var userId = req.cookies.id,
@@ -304,11 +323,11 @@ app.get('/room/exit/:id([0-9]+)', function(req, res){
 });
 
 
+
 app.use(function (req, res) {
     res.status(404);
     res.send("Not Found");
 });
-
 
 io.on( 'connection', function( socket ) {
     console.log( 'New user connected' );
@@ -342,5 +361,11 @@ io.on( 'connection', function( socket ) {
         socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherWords', data);
         console.log("words", data);
+    });
+
+    socket.on('sendImage', function(data){
+        socket.join(data.room);
+        socket.broadcast.to(data.room).emit('otherImage', data);
+        console.log("image", data);
     });
 });

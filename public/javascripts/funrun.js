@@ -12,7 +12,8 @@ window.onload = function(){
             curURL = window.location.href,
             roomNum = /^.*\/(.*)$/.exec(window.location.href)[1],
             userName = $("#username").text(),
-            lastTime = new Date();
+            lastTime = new Date(),
+            width = $("#game").width() * 0.5;
 
         return {
             userID: userID,
@@ -38,6 +39,29 @@ window.onload = function(){
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
                 '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info  col-xs-8">' + words +
                 '</p></div><div class="clearfix"></div>';
+            },
+            getImageTemplate: function (src) {
+                var now = new Date(),
+                    wordsToHtml = '<p class="text-center small" id="datetime"></p>';
+
+                if ((now - lastTime) / 1000 > 120 ) {
+                    wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
+                }
+                lastTime = now;
+                return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
+                    '</div><div class="media-body pull-right col-xs-8"><img class="pull-right" width="' + width + '" src="/userImages/' + src +
+                    '"/></div><div class="clearfix"></div>';
+            },
+            getOtherImageTemplate : function (username, src, userID){
+                var now = new Date(),
+                    wordsToHtml = '<p class="text-center small" id="datetime"></p>';
+                if ((now - lastTime) / 1000 > 120 ) {
+                    wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
+                }
+                lastTime = now;
+                return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
+                    '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><img width="' + width + '" src="/userImages/' + src +
+                    '"/></div><div class="clearfix"></div>';
             },
             username: userName,
             el : function(id, rg){
@@ -137,6 +161,15 @@ window.onload = function(){
                 }, 500);
         });
 
+        socket.on("otherImage", function(newImage){
+            console.log(newImage);
+            var otherImage = myLib.getOtherImageTemplate(newImage.username, newImage.imageName, newImage.userID);
+            content.append(otherImage);
+            content.animate(
+                {
+                    scrollTop:content[0].scrollHeight
+                }, 500);
+        });
         socket.emit("join", {
             room: myLib.roomNum,
             username: myLib.username
@@ -172,6 +205,45 @@ window.onload = function(){
                 username: myLib.username
             });
             return true;
+        });
+
+        $("#upload-image").on("submit", function(event) {
+            var formData = new FormData($("#upload-image")[0]);
+
+            event.preventDefault();
+            $.ajax({
+                url: '/chat/imageUpload',  //server script to process data
+                type: 'POST',
+                xhr: function() {  // custom xhr
+                    var myXhr = $.ajaxSettings.xhr();
+                    return myXhr;
+                },
+                //Ajax events
+                success: function(data) {
+                    var myImage = myLib.getImageTemplate(data.imageName);
+                    content.append(myImage);
+                    content.animate(
+                        {
+                            scrollTop:content[0].scrollHeight
+                        }, 500);
+                    socket.emit('sendImage', {
+                        room: myLib.roomNum,
+                        username: myLib.username,
+                        imageName: data.imageName,
+                        userID : myLib.userID
+                    });
+                },
+                error: function(data) {
+                    console.log(data);
+                },
+                // Form data
+                data: formData,
+                //Options to tell JQuery not to process data or worry about content-type
+                cache: false,
+                contentType: false,
+                processData: false
+            }, 'json');
+            $('#exampleModal').modal("hide");
         });
 
         return {

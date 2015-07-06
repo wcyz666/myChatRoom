@@ -6,3 +6,4 @@ npm-debug.log
 user.db
 sqlite3.exe
 /public/avatar
+/public/userImages

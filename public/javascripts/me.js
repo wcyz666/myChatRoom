@@ -84,7 +84,4 @@
         });
     });
 
-    $('#sendMsg').on('click', function(event) {
-
-    });
 })();
