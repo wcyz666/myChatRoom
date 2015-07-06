@@ -87,7 +87,7 @@
                                     </span></button>
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></button>
                         <ul class="dropdown-menu">
-                            <li><a href="#">Action</a></li>
+                            <li><a data-toggle="modal" data-target="#exampleModal" href="#">Image</a></li>
                             <li><a href="#">Another action</a></li>
                             <li><a href="#">Something else here</a></li>
                             <li role="separator" class="divider"></li>
@@ -95,6 +95,31 @@
                         </ul>
                     </div>
                 </div>
+
+
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="exampleModalLabel">Send Image</h4>
+                            </div>
+                            <form action="/new" method="POST" id="upload-image" >
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <label for="image" class="pull-left">Select An Image</label><br>
+                                        <input type="file" class="form-control" id="image" name="image" required="required">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="reset" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
         <div class="col-sm-3">
