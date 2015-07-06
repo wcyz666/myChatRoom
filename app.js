@@ -258,7 +258,7 @@ app.get('/pick', function(req, res){
 
 app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
     var image = req.files.image,
-        ext = '.' + req.files.image.name.split(".")[1],
+        ext = '.' + req.files.image.type.split("/")[1],
         imageID = uuid.v4();
     fs.readFile(image.path, function (err, data) {
         var path = __dirname + "/public/userImages/" + imageID + ext;
