@@ -4,7 +4,8 @@ window.onload = function(){
     var socket,
         content = $('#chatroom-content'),
         text = $('#chatroom-text'),
-        userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1];
+        userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1],
+        msg = Messenger();
 
     var myLib = (function(){
 
@@ -18,77 +19,54 @@ window.onload = function(){
         return {
             userID: userID,
             roomNum: roomNum,
-            getWordsTemplate : function (words){
+            getTime: function() {
                 var now = new Date(),
                     wordsToHtml = '<p class="text-center small" id="datetime"></p>';
                 if ((now - lastTime) / 1000 > 120 ) {
                     wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
                 }
                 lastTime = now;
+                return wordsToHtml;
+            },
+            getWordsTemplate : function (words){
+                var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
                 '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary text-right col-xs-12">' + words +
                 '</p></div><div class="clearfix"></div>';
             },
             getOtherWordsTemplate : function (username, words, userID){
-                var now = new Date(),
-                    wordsToHtml = '<p class="text-center small" id="datetime"></p>';
-                if ((now - lastTime) / 1000 > 120 ) {
-                    wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
-                }
-                lastTime = now;
+                var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
                 '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info  col-xs-8">' + words +
                 '</p></div><div class="clearfix"></div>';
             },
             getImageTemplate: function (src) {
-                var now = new Date(),
-                    wordsToHtml = '<p class="text-center small" id="datetime"></p>';
-
-                if ((now - lastTime) / 1000 > 120 ) {
-                    wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
-                }
-                lastTime = now;
+                var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
                     '</div><div class="media-body pull-right col-xs-8"><img class="pull-right" width="' + width + '" src="/userImages/' + src +
                     '"/></div><div class="clearfix"></div>';
             },
             getOtherImageTemplate : function (username, src, userID){
-                var now = new Date(),
-                    wordsToHtml = '<p class="text-center small" id="datetime"></p>';
-                if ((now - lastTime) / 1000 > 120 ) {
-                    wordsToHtml = '<p class="text-center small" id="datetime">' + new Date().toLocaleString() + '</p>';
-                }
-                lastTime = now;
+                var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
                     '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><img width="' + width + '" src="/userImages/' + src +
                     '"/></div><div class="clearfix"></div>';
             },
             username: userName,
-            el : function(id, rg){
-                var range = rg || document;
-                return range.getElementById(id);
-            },
-            qs : function(selector, rg){
-                var range = rg || document;
-                return range.querySelector(selector);
-            },
-            qsa : function(selector, rg){
-                var range = rg || document;
-                return range.querySelectorAll(selector);
-            },
             createNode : function(tag, child, attrs){
-                var outerTag = document.createElement(tag);
-                var content;
+                var outerTag = document.createElement(tag),
+                    content,
+                    i,
+                    length;
                 if (typeof child === "string"){
                     content = document.createTextNode(child);
                     outerTag.appendChild(content);
                 }
                 else {
                     if (child instanceof Array){
-                        for (var _index in child) {
-                            var index = parseInt(_index);
-                            if (isNaN(_index)) continue;
-                            content = child[index];
+                        for (i = 0, length = child.length; i < length; i++) {
+
+                            content = child[i];
                             if (typeof content === "string") {
                                 content = document.createTextNode(content);
                             }
@@ -110,9 +88,6 @@ window.onload = function(){
             createQRcode : function(){
                 myLib.el(qrid).src = "https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=" + encodeURIComponent(curURL);
             },
-            getCurrentUsers : function() {
-
-            },
             createNewUser: function(user){
                 var html = "";
                 html += '<li class="li-name"><span class="label label-default player-name">' + user + '</span>';
@@ -123,12 +98,9 @@ window.onload = function(){
         };
     })();
 
-    var msg = Messenger();
-    var firstPlay = true;
-
     (function (){
 
-        socket = io("http://127.0.0.1:3000");
+        socket = io();
         socket.on("newClient", function(newUser){
             if ($(".player-name").text().indexOf(newUser) != -1 || newUser == myLib.username) return;
 
@@ -142,7 +114,7 @@ window.onload = function(){
 
 
         socket.on("exitClient", function(newUser){
-            console.log(newUser);
+
             $("li:contains(" + newUser.trim() + ")").remove();
             msg.post({
                 message: "User " + newUser + " exit !",
@@ -162,7 +134,7 @@ window.onload = function(){
         });
 
         socket.on("otherImage", function(newImage){
-            console.log(newImage);
+
             var otherImage = myLib.getOtherImageTemplate(newImage.username, newImage.imageName, newImage.userID);
             content.append(otherImage);
             content.animate(
@@ -181,6 +153,7 @@ window.onload = function(){
             }
         });
         $('#sendMsg').on('click', function(event) {
+            var myWords = myLib.getWordsTemplate(text.val());
 
             if (text.val() === "")
                 return false;
@@ -190,7 +163,6 @@ window.onload = function(){
                 words: text.val(),
                 userID : myLib.userID
             });
-            var myWords = myLib.getWordsTemplate(text.val());
             text.val("");
             content.append(myWords);
             content.animate(

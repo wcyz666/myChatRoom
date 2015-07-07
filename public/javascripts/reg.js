@@ -40,8 +40,7 @@ window.onload = function(){
                     }
                 }
             },
-            "json"
-        )
+            "json")
     });
     document.forms[0].onsubmit = function(){
 
