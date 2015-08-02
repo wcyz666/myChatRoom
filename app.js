@@ -117,7 +117,7 @@ app.post('/login', function (req, res) {
     }
 });
 
-app.get('/nameValidate', function(req, res) {
+app.get('/reg/nameValidate', function(req, res) {
     console.log(req.query.name);
     db.all('SELECT * FROM user WHERE username = ?', [req.query.name], function(err, rows) {
         if (err) throw err;

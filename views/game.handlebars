@@ -105,12 +105,16 @@
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                 <h4 class="modal-title" id="exampleModalLabel">Send Image</h4>
                             </div>
-                            <form action="/new" method="POST" id="upload-image" >
+                            <form action="/chat/imageUpload" method="POST" id="upload-image" >
                                 <div class="modal-body">
-                                    <div class="form-group">
+                                    <div class="form-group" id="file-uploader">
                                         <label for="image" class="pull-left">Select An Image</label><br>
                                         <input type="file" class="form-control" id="image" name="image" required="required">
                                     </div>
+                                    <button type="button" class="btn btn-success"  id="upload-button">
+                                        <span class="glyphicon glyphicon-plus" id="addPic"></span>
+                                        Add More
+                                    </button>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="reset" class="btn btn-default" data-dismiss="modal">Close</button>

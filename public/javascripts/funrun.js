@@ -5,7 +5,8 @@ window.onload = function(){
         content = $('#chatroom-content'),
         text = $('#chatroom-text'),
         userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1],
-        msg = Messenger();
+        msg = Messenger(),
+        fileUploader = $('<input type="file" class="form-control" id="image" name="image" required="required">');
 
     var myLib = (function(){
 
@@ -17,6 +18,10 @@ window.onload = function(){
             width = $("#game").width() * 0.5;
 
         return {
+            el: function(id, doc) {
+                var range = doc || document;
+                return range.getElementById(id);
+            },
             userID: userID,
             roomNum: roomNum,
             getTime: function() {
@@ -88,6 +93,9 @@ window.onload = function(){
             createQRcode : function(){
                 myLib.el(qrid).src = "https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=" + encodeURIComponent(curURL);
             },
+            getFileUploaderCopy : function() {
+                return fileUploader.clone();
+            },
             createNewUser: function(user){
                 var html = "";
                 html += '<li class="li-name"><span class="label label-default player-name">' + user + '</span>';
@@ -152,6 +160,12 @@ window.onload = function(){
                 $('#sendMsg').click();
             }
         });
+
+        $('#sendPic').on('click', function(event) {
+            $("input[type='file']").remove();
+            $("#file-uploader").append(myLib.getFileUploaderCopy());
+        });
+
         $('#sendMsg').on('click', function(event) {
             var myWords = myLib.getWordsTemplate(text.val());
 
@@ -179,42 +193,58 @@ window.onload = function(){
             return true;
         });
 
+        $("#upload-button").on("click", function(event) {
+            $("#file-uploader").append(myLib.getFileUploaderCopy());
+        });
+
         $("#upload-image").on("submit", function(event) {
-            var formData = new FormData($("#upload-image")[0]);
+
+            var form = document.createElement("form"),
+                formData,
+                images = $("#upload-image input[type='file']"),
+                length =images.size(),
+                i;
 
             event.preventDefault();
-            $.ajax({
-                url: '/chat/imageUpload',  //server script to process data
-                type: 'POST',
-                xhr: function() {  // custom xhr
-                    var myXhr = $.ajaxSettings.xhr();
-                    return myXhr;
-                },
-                //Ajax events
-                success: function(data) {
-                    var myImage = myLib.getImageTemplate(data.imageName);
-                    content.append(myImage);
-                    content.animate(
-                        {
-                            scrollTop:content[0].scrollHeight
-                        }, 500);
-                    socket.emit('sendImage', {
-                        room: myLib.roomNum,
-                        username: myLib.username,
-                        imageName: data.imageName,
-                        userID : myLib.userID
-                    });
-                },
-                error: function(data) {
-                    console.log(data);
-                },
-                // Form data
-                data: formData,
-                //Options to tell JQuery not to process data or worry about content-type
-                cache: false,
-                contentType: false,
-                processData: false
-            }, 'json');
+
+            for (i = 0; i < length; i++) {
+                $(form).append(images.get(i));
+                formData = new FormData(form);
+                $.ajax({
+                    url: '/chat/imageUpload',  //server script to process data
+                    type: 'POST',
+                    xhr: function() {  // custom xhr
+                        var myXhr = $.ajaxSettings.xhr();
+                        return myXhr;
+                    },
+                    //Ajax events
+                    success: function(data) {
+                        var myImage = myLib.getImageTemplate(data.imageName);
+                        content.append(myImage);
+                        content.animate(
+                            {
+                                scrollTop:content[0].scrollHeight
+                            }, 500);
+                        socket.emit('sendImage', {
+                            room: myLib.roomNum,
+                            username: myLib.username,
+                            imageName: data.imageName,
+                            userID : myLib.userID
+                        });
+                    },
+                    error: function(data) {
+                        console.log(data);
+                    },
+                    // Form data
+                    data: formData,
+                    //Options to tell JQuery not to process data or worry about content-type
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                }, 'json');
+                $(form).empty();
+            }
+
             $('#exampleModal').modal("hide");
         });
 

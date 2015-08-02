@@ -19,7 +19,7 @@ window.onload = function(){
     userNameInput.on('blur', function(){
         if (userNameInput.val().length == 0)
             return false;
-        $.get("/nameValidate", {
+        $.get("/reg/nameValidate", {
                 name: userNameInput.val().trim()
             },
             function (data) {
