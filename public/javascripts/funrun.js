@@ -6,7 +6,9 @@ window.onload = function(){
         text = $('#chatroom-text'),
         userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1],
         msg = Messenger(),
-        fileUploader = $('<input type="file" class="form-control" id="image" name="image" required="required">');
+        fileUploader = $('<input type="file" class="form-control" id="image" name="image" required="required">'),
+        unviewMsg = 0,
+        pageIsFocus = true;
 
     var myLib = (function(){
 
@@ -108,6 +110,8 @@ window.onload = function(){
 
     (function (){
 
+
+
         socket = io();
         socket.on("newClient", function(newUser){
             if ($(".player-name").text().indexOf(newUser) != -1 || newUser == myLib.username) return;
@@ -139,6 +143,7 @@ window.onload = function(){
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
+            msgCallback();
         });
 
         socket.on("otherImage", function(newImage){
@@ -149,6 +154,7 @@ window.onload = function(){
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
+            msgCallback();
         });
         socket.emit("join", {
             room: myLib.roomNum,
@@ -183,7 +189,15 @@ window.onload = function(){
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
+            msgCallback();
         });
+
+        function msgCallback() {
+            if (!pageIsFocus) {
+                ++unviewMsg;
+                document.title = unviewMsg + " messages - ChatRoom 18-652";
+            }
+        }
 
         $('#exit').on('click', function(event){
             socket.emit('exit', {
@@ -195,6 +209,16 @@ window.onload = function(){
 
         $("#upload-button").on("click", function(event) {
             $("#file-uploader").append(myLib.getFileUploaderCopy());
+        });
+
+        $(window).focus(function(){
+            unviewMsg = 0;
+            pageIsFocus = true;
+            document.title = "ChatRoom 18-652";
+        });
+
+        $(window).blur(function(){
+            pageIsFocus = false;
         });
 
         $("#upload-image").on("submit", function(event) {
@@ -225,6 +249,7 @@ window.onload = function(){
                             {
                                 scrollTop:content[0].scrollHeight
                             }, 500);
+                        msgCallback();
                         socket.emit('sendImage', {
                             room: myLib.roomNum,
                             username: myLib.username,
