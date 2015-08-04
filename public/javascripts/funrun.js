@@ -170,6 +170,7 @@ window.onload = function(){
         $('#sendPic').on('click', function(event) {
             $("input[type='file']").remove();
             $("#file-uploader").append(myLib.getFileUploaderCopy());
+            $('#exampleModal').modal("show");
         });
 
         $('#sendMsg').on('click', function(event) {
@@ -235,38 +236,31 @@ window.onload = function(){
                 $(form).append(images.get(i));
                 formData = new FormData(form);
                 $.ajax({
-                    url: '/chat/imageUpload',  //server script to process data
+                    url: '/chat/imageUpload',
                     type: 'POST',
-                    xhr: function() {  // custom xhr
-                        var myXhr = $.ajaxSettings.xhr();
-                        return myXhr;
-                    },
-                    //Ajax events
-                    success: function(data) {
-                        var myImage = myLib.getImageTemplate(data.imageName);
-                        content.append(myImage);
-                        content.animate(
-                            {
-                                scrollTop:content[0].scrollHeight
-                            }, 500);
-                        msgCallback();
-                        socket.emit('sendImage', {
-                            room: myLib.roomNum,
-                            username: myLib.username,
-                            imageName: data.imageName,
-                            userID : myLib.userID
-                        });
-                    },
-                    error: function(data) {
-                        console.log(data);
-                    },
                     // Form data
                     data: formData,
                     //Options to tell JQuery not to process data or worry about content-type
                     cache: false,
                     contentType: false,
                     processData: false
-                }, 'json');
+                }, 'json').success( function(data) {
+                    var myImage = myLib.getImageTemplate(data.imageName);
+                    content.append(myImage);
+                    content.animate(
+                        {
+                            scrollTop:content[0].scrollHeight
+                        }, 500);
+                    msgCallback();
+                    socket.emit('sendImage', {
+                        room: myLib.roomNum,
+                        username: myLib.username,
+                        imageName: data.imageName,
+                        userID : myLib.userID
+                    });
+                }).error(function(data) {
+                    console.log(data);
+                });
                 $(form).empty();
             }
 

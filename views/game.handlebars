@@ -29,7 +29,7 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
-                    <img width="48" class="pull-left" src="/avatar/{{me.userID}}.png" />
+                    <img width="40" class="pull-left" src="/avatar/{{me.userID}}.png" />
                     <li class="dropdown">
                         <a id="username" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{me.username}}<span class="caret"></span></a>
                         <ul class="dropdown-menu" role="menu">
@@ -81,11 +81,11 @@
             <div class="panel-footer">
 
                 <div class="input-group">
-                    <input type="text" id="chatroom-text" class="form-control" aria-label="...">
+                    <input type="text" id="chatroom-text" class="form-control">
                     <div class="input-group-btn">
-                        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-send" aria-hidden="true" id="sendMsg">
+                        <button type="button" class="btn btn-default"  id="sendMsg"><span class="glyphicon glyphicon-send" aria-hidden="true">
                                     </span></button>
-                        <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-picture" data-toggle="modal" data-target="#exampleModal" aria-hidden="true" id="sendPic">
+                        <button type="button" class="btn btn-default" id="sendPic"><span class="glyphicon glyphicon-picture" aria-hidden="true">
                                     </span></button>
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></button>
                         <ul class="dropdown-menu">
