@@ -15,7 +15,7 @@ window.onload = function(){
         var qrid = "qrcode",
             curURL = window.location.href,
             roomNum = /^.*\/(.*)$/.exec(window.location.href)[1],
-            userName = $("#username").text(),
+            userName = $("#username").text().trim(),
             lastTime = new Date(),
             width = $("#game").width() * 0.5;
 

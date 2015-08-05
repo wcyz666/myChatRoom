@@ -14,7 +14,8 @@ var express = require('express'),
     im = require('imagemagick'),
     multipart = require('connect-multiparty'),
     multipartMiddleware = multipart(),
-    uuid = require('node-uuid');
+    uuid = require('node-uuid'),
+    async = require('async');
 
 
 app.engine("handlebars", handlebars.engine);
@@ -168,25 +169,24 @@ app.post('/reg', multipartMiddleware, function(req, res){
                     isChatting: false,
                     currentRoom : -1
                 };
-                fs.readFile(avatar.path, function (err, data) {
-                    var path = __dirname + "/public/avatar/" + row.id + '.png';
+                async.waterfall([
+                    function (callback) {
+                        fs.readFile(avatar.path, function (err, data) {
+                            callback(err, data);
+                        });
+                    },
+                    function (data, callback) {
+                        var path = __dirname + "/public/avatar/" + row.id + '.png';
+                        fs.writeFile(path, data, function (err){
+                            callback(err, null)
+                        });
+                    }],
+                    function (err, result) {
 
-                    fs.writeFile(path, data, function (err) {
-
-                        /*im.resize({
-                                srcPath: avatar.path,
-                                dstPath: path,
-                                width:   64
-                            }, function(err, stdout, stderr){
-                                if (err) throw err;
-                                console.log('resized image to fit within 200x200px');
-                            });
-                         */
-                         res.cookie("id", cookie, {maxAge: 1000 * 86400});
-                         res.redirect("me");
-                    });
-
-                });
+                        res.cookie("id", cookie, {maxAge: 1000 * 86400});
+                        res.redirect("me");
+                    }
+                );
             });
         });
     }
@@ -259,18 +259,35 @@ app.get('/pick', function(req, res){
 app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
     var image = req.files.image,
         ext = '.' + req.files.image.type.split("/")[1],
-        imageID = uuid.v4();
-    fs.readFile(image.path, function (err, data) {
-        var path = __dirname + "/public/userImages/" + imageID + ext;
+        imageID = uuid.v4(),
+        path = __dirname + "/public/userImages/" + imageID + ext;
 
-        fs.writeFile(path, data, function (err) {
-            res.json({
-                status: "OK",
-                imageName: imageID + ext
+    async.waterfall([
+        function (callback) {
+            fs.readFile(image.path, function (err, data){
+                callback(err, data);
             });
-        });
-
-    });
+        },
+        function (data, callback) {
+            fs.writeFile(path, data, function (err){
+                callback(err, null)
+            });
+        }],
+        function (err, result) {
+            if (err) {
+                res.json({
+                    status: "FAIL",
+                    cause: err
+                });
+            }
+            else{
+                res.json({
+                    status: "OK",
+                    imageName: imageID + ext
+                });
+            }
+        }
+    );
 });
 
 
