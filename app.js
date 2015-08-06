@@ -15,7 +15,8 @@ var express = require('express'),
     multipart = require('connect-multiparty'),
     multipartMiddleware = multipart(),
     uuid = require('node-uuid'),
-    async = require('async');
+    async = require('async'),
+    session = require('express-session');
 
 
 app.engine("handlebars", handlebars.engine);
@@ -25,6 +26,15 @@ app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
+app.use(session({
+    secret: "Hello World",
+    resave: false,
+    saveUninitialized: true,
+    cookie :{
+        maxAge: 1000 * 86400
+    }
+}));
+
 app.use( express.static( __dirname + '/public' ) );
 
 var server_port =  3000;
@@ -40,37 +50,15 @@ var server = app.listen( server_port, server_ip_address, function () {
 
 var io = socketIO(server);
 currentRooms = {};
-onlineUsers = {};
 
 app.use("/api", api);
 
 app.get('/', function(req, res){
 
-    var i = 0,
-         id = req.cookies.id;
-    if (id){
-        if (id in onlineUsers) {
-            res.cookie("id", id, {maxAge: 1000 * 86400});
-            res.redirect("me");
-        }
-        else {
-            db.all("SELECT * FROM user WHERE cookie = ?", [id], function(err, rows) {
-                if (err) throw err;
-                if (rows.length > 0){
-                    onlineUsers[id] = {
-                        userID: rows[0].id,
-                        username : rows[0].username,
-                        isChatting: false,
-                        currentRoom : -1
-                    };
-                    res.redirect("me");
-                }
-                else {
-                    res.cookie("id", "",{maxAge: -10000});
-                    res.render("login", {state: true});
-                }
-            });
-        }
+    var session = req.session;
+    console.log(session);
+    if (req.session.isLogin){
+        res.redirect("me");
     }
     else {
         res.render("login", {state: true});
@@ -86,27 +74,25 @@ app.post('/login', function (req, res) {
         cookie,
         sql = "",
         inserts = [];
+
     if (req.body.username && req.body.password) {
         pwdhash = md5(req.body.username + req.body.password);
         sql = "SELECT * FROM user WHERE password = ?";
         inserts = [pwdhash];
-        //console.log(sql);
+
         db.all(sql, inserts, function(err, rows) {
             if (err) throw err;
             if (rows.length > 0) {
-                cookie = md5(Math.random() + "");
-                sql = "UPDATE user SET cookie = ? WHERE password = ?";
-                inserts = [cookie, pwdhash];
-                onlineUsers[cookie] = {
+
+                req.session.userInfo = {
                     userID: rows[0].id,
                     username : rows[0].username,
                     isChatting: false,
                     currentRoom : -1
                 };
-                db.run(sql, inserts, function(){
-                    res.cookie("id", cookie, {maxAge: 1000 * 86400});
-                    res.redirect("me");
-                });
+                req.session.isLogin = true;
+
+                res.redirect("me");
             }
             else {
                 res.render("login", {state: false});
@@ -119,7 +105,7 @@ app.post('/login', function (req, res) {
 });
 
 app.get('/reg/nameValidate', function(req, res) {
-    console.log(req.query.name);
+
     db.all('SELECT * FROM user WHERE username = ?', [req.query.name], function(err, rows) {
         if (err) throw err;
 
@@ -146,29 +132,22 @@ app.get('/init', function(req, res) {
 app.post('/reg', multipartMiddleware, function(req, res){
     console.log(req.files);
     var pwdhash,
-        cookie,
         sql = "",
         inserts = [],
         username = req.body.username,
         password = req.body.password,
         avatar = req.files.avatar;
+
     if (username && password) {
         pwdhash = md5(username + password);
-        cookie = md5(Math.random() + "");
-        sql = "INSERT INTO user VALUES (NULL, ?, ?, ?, 0)";
-        inserts = [username, pwdhash, cookie];
+
+        sql = "INSERT INTO user VALUES (NULL, ?, ?, '', 0)";
+        inserts = [username, pwdhash];
         db.run(sql, inserts, function(err, rows) {
             if (err) throw err;
             db.get("SELECT id FROM user WHERE username = ?", [username], function(err, row) {
                 if (err) throw err;
-                console.log(row);
 
-                onlineUsers[cookie] = {
-                    userID :row.id,
-                    username : username,
-                    isChatting: false,
-                    currentRoom : -1
-                };
                 async.waterfall([
                     function (callback) {
                         fs.readFile(avatar.path, function (err, data) {
@@ -182,8 +161,13 @@ app.post('/reg', multipartMiddleware, function(req, res){
                         });
                     }],
                     function (err, result) {
-
-                        res.cookie("id", cookie, {maxAge: 1000 * 86400});
+                        req.session.userInfo = {
+                            userID: row.id,
+                            username: username,
+                            isChatting: false,
+                            currentRoom : -1
+                        };
+                        req.session.isLogin = true;
                         res.redirect("me");
                     }
                 );
@@ -196,38 +180,37 @@ app.post('/reg', multipartMiddleware, function(req, res){
 });
 
 app.get('/me', function(req, res) {
-    var id = req.cookies.id;
-    console.log(onlineUsers);
+    var session = req.session;
 
-    if (!onlineUsers[id])
+    if (!session.isLogin)
         res.redirect("/");
     else {
-        utils.changeUserStatus(onlineUsers, currentRooms, id);
-        res.render("me", {me : onlineUsers[id].username,
-                            id: onlineUsers[id].userID});
+        utils.changeUserStatus(currentRooms, session.userInfo);
+        res.render("me", {me : session.userInfo.username,
+                            id: session.userInfo.userID});
     }
 });
 
 app.get('/logout', function(req, res) {
-    res.cookie("id", "", {maxAge: -1000});
-    res.render("login", {state : true});
+    req.session.isLogin = false;
+    res.redirect("/");
 });
 
 app.get('/new', function(req, res, next){
-    var id = req.cookies.id;
-    if (!onlineUsers[id])
+    var session = req.session;
+    if (!session.isLogin)
         res.redirect("/");
-    res.render("me", {me : onlineUsers[id].username});
+    res.render("me", {me : session.userInfo.username});
 });
 
 app.post('/new', function(req, res){
-    var id = req.cookies.id,
-        me = onlineUsers[id];
+    var me = req.session.userInfo,
+        room = 0;
     if (!me) {
         res.redirect('/login');
         return;
     }
-    var room = utils.getNewRoom(currentRooms);
+    room = utils.getNewRoom(currentRooms);
     me.currentRoom = room;
     me.isChatting = true;
     currentRooms[room] = {
@@ -241,8 +224,8 @@ app.post('/new', function(req, res){
 
 
 app.get('/pick', function(req, res){
-    var id = req.cookies.id,
-        me = onlineUsers[id];
+    var me = req.session.userInfo;
+
     if (!me) {
         res.redirect("/login");
         return;
@@ -293,13 +276,11 @@ app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
 
 /* GET users listing. */
 app.all('/room/:id([0-9]+)', function(req, res) {
-    var userId = req.cookies.id,
-        me = onlineUsers[userId],
+    var me = req.session.userInfo,
         roomId = req.params.id,
         chatters,
         pos;
 
-    console.log(onlineUsers);
     console.log(currentRooms);
 
     if (!me || !currentRooms[roomId]){
@@ -308,7 +289,7 @@ app.all('/room/:id([0-9]+)', function(req, res) {
     }
 
     if (me.isChatting && roomId != me.currentRoom) {
-        utils.changeUserStatus(onlineUsers, currentRooms, userId);
+        utils.changeUserStatus(currentRooms, me);
     }
     chatters = currentRooms[roomId].chatters.slice();
     me.isChatting = true;
@@ -328,14 +309,13 @@ app.all('/room/:id([0-9]+)', function(req, res) {
 });
 
 app.get('/room/exit/:id([0-9]+)', function(req, res){
-    var id = req.cookies.id,
-        me = onlineUsers[id],
+    var me = req.session.userInfo,
         room;
     if (!me){
         res.redirect("/");
         return;
     }
-    utils.changeUserStatus(onlineUsers, currentRooms, id);
+    utils.changeUserStatus(currentRooms, me);
     res.redirect("/me");
 });
 

@@ -23,10 +23,9 @@ var utils = {
         return roomList[Math.floor(Math.random() * count)];
     },
 
-    changeUserStatus : function(users, rooms, me){
-        var curRoom = users[me].currentRoom,
+    changeUserStatus : function(rooms, myInfo){
+        var curRoom = myInfo.currentRoom,
             pos,
-            myInfo = users[me],
             chatters;
         console.log(rooms);
         myInfo.isChatting = false;
