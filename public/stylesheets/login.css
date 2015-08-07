@@ -1,4 +1,4 @@
-	@import url(http://fonts.googleapis.com/css?family=PT+Sans:400,700|Lato:100,300,400);
+
 /* ##########  */
 /*   $GLOBAL   */
 /* ##########  */
@@ -60,9 +60,9 @@ body {
   left: 50%;
   display: block;
   margin-top: -185px;
-  margin-left: -250px;
+  margin-left: -300px;
   padding: 25px;
-  width: 500px;
+  width: 600px;
   height: 370px;
   background: white;
   text-align: center;

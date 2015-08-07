@@ -56,7 +56,7 @@ app.use("/api", api);
 app.get('/', function(req, res){
 
     var session = req.session;
-    console.log(session);
+
     if (req.session.isLogin){
         res.redirect("me");
     }
@@ -130,7 +130,7 @@ app.get('/init', function(req, res) {
 
 
 app.post('/reg', multipartMiddleware, function(req, res){
-    console.log(req.files);
+
     var pwdhash,
         sql = "",
         inserts = [],
@@ -200,13 +200,14 @@ app.get('/new', function(req, res, next){
     var session = req.session;
     if (!session.isLogin)
         res.redirect("/");
-    res.render("me", {me : session.userInfo.username});
+    else
+        res.render("me", {me : session.userInfo.username});
 });
 
 app.post('/new', function(req, res){
     var me = req.session.userInfo,
         room = 0;
-    if (!me) {
+    if (!req.session.isLogin || !me) {
         res.redirect('/login');
         return;
     }
@@ -218,7 +219,7 @@ app.post('/new', function(req, res){
         chatters:
             [me.username]
     };
-    console.log(currentRooms);
+
     res.redirect("/room/" + room);
 });
 
@@ -226,7 +227,7 @@ app.post('/new', function(req, res){
 app.get('/pick', function(req, res){
     var me = req.session.userInfo;
 
-    if (!me) {
+    if (!req.session.isLogin || !me) {
         res.redirect("/login");
         return;
     }
@@ -235,7 +236,7 @@ app.get('/pick', function(req, res){
     me.isChatting = true;
     if (currentRooms[roomRandom].chatters.indexOf(me.username) == -1)
         currentRooms[roomRandom].chatters.push(me.username);
-    console.log(currentRooms);
+
     res.redirect("/room/" + roomRandom);
 });
 
@@ -245,32 +246,40 @@ app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
         imageID = uuid.v4(),
         path = __dirname + "/public/userImages/" + imageID + ext;
 
-    async.waterfall([
-        function (callback) {
-            fs.readFile(image.path, function (err, data){
-                callback(err, data);
-            });
-        },
-        function (data, callback) {
-            fs.writeFile(path, data, function (err){
-                callback(err, null)
-            });
-        }],
-        function (err, result) {
-            if (err) {
-                res.json({
-                    status: "FAIL",
-                    cause: err
-                });
+    if (!req.session.isLogin) {
+        res.json({
+            status: "FAIL",
+            cause: "Unauthenticated user"
+        });
+    }
+    else {
+        async.waterfall([
+                function (callback) {
+                    fs.readFile(image.path, function (err, data) {
+                        callback(err, data);
+                    });
+                },
+                function (data, callback) {
+                    fs.writeFile(path, data, function (err) {
+                        callback(err, null)
+                    });
+                }],
+            function (err, result) {
+                if (err) {
+                    res.json({
+                        status: "FAIL",
+                        cause: err
+                    });
+                }
+                else {
+                    res.json({
+                        status: "OK",
+                        imageName: imageID + ext
+                    });
+                }
             }
-            else{
-                res.json({
-                    status: "OK",
-                    imageName: imageID + ext
-                });
-            }
-        }
-    );
+        );
+    }
 });
 
 
@@ -281,9 +290,7 @@ app.all('/room/:id([0-9]+)', function(req, res) {
         chatters,
         pos;
 
-    console.log(currentRooms);
-
-    if (!me || !currentRooms[roomId]){
+    if (!req.session.isLogin || !me || !currentRooms[roomId]){
         res.redirect("/");
         return;
     }
@@ -327,19 +334,6 @@ app.use(function (req, res) {
 });
 
 io.on( 'connection', function( socket ) {
-    console.log( 'New user connected' );
-
-    socket.on('add', function (data) {
-        console.log(data);
-        roomList[data.room] = data.playlist;
-        socket.broadcast.to(data["room"]).emit('add', data);
-    });
-
-    socket.on('remove', function (data) {
-        console.log(data);
-        roomList[data.room] = data.playlist;
-        socket.broadcast.to(data["room"]).emit('remove', data);
-    });
 
     socket.on("join", function(data) {
         socket.join(data.room);

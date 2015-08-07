@@ -245,6 +245,7 @@ window.onload = function(){
                     contentType: false,
                     processData: false
                 }, 'json').success( function(data) {
+                    console.log(data);
                     var myImage = myLib.getImageTemplate(data.imageName);
                     content.append(myImage);
                     content.animate(
