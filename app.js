@@ -288,7 +288,7 @@ app.get('/chat/loadPrevMsg', function(req, res){
     var time = req.query.nowTime,
         room = req.query.room;
     console.log(req.query);
-    db.all("SELECT * FROM record_archive WHERE room_id = ? AND post_time < datetime(?, 'unixepoch', 'localtime') ORDER BY post_time DESC LIMIT 20;", [room, time], function(err, rows){
+    db.all("SELECT * FROM record_archive WHERE room_id = ? AND post_time < datetime(?, 'unixepoch', 'localtime') ORDER BY record_id DESC LIMIT 20;", [room, time], function(err, rows){
         var i, length,
             data = [],
             item,
@@ -386,7 +386,7 @@ io.on( 'connection', function( socket ) {
         socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherWords', data);
         console.log("words", data);
-        db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW'))",
+        db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW', 'localtime'))",
                 [data.room, data.userID, data.username, 0, data.words], function(err, row){
             if (err) throw err;
         });
@@ -396,7 +396,7 @@ io.on( 'connection', function( socket ) {
         socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherImage', data);
         console.log("image", data);
-        db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW'))",
+        db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW', 'localtime'))",
             [data.room, data.userID, data.username, 1, data.imageName], function(err, row){
                 if (err) throw err;
             })

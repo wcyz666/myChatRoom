@@ -7,7 +7,7 @@ window.onload = function(){
         userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1],
         msg = Messenger(),
         fileUploader = $('<input type="file" class="form-control" id="image" name="image" required="required">'),
-        prevDelim = $('<div class="text-center"><small>------- Old Messages --------</small></div>'),
+        prevDelim = $('<div class="text-center">------- Old Messages --------</div>'),
         unviewMsg = 0,
         pageIsFocus = true,
         loadTime = Date.parse(new Date()) / 1000;
@@ -207,9 +207,15 @@ window.onload = function(){
                             );
                         }
                     }
-                    loadTime = result.newTime;
-                    that.removeClass('disabled');
-                    $('#loading').addClass('hidden');
+                    if (result.dataCount < 20) {
+                        $('#loading').addClass('hidden').next().removeClass('hidden');
+                        return;
+                    }
+                    else {
+                        loadTime = result.newTime;
+                        that.removeClass('disabled');
+                        $('#loading').addClass('hidden');
+                    }
                 }
             });
         });

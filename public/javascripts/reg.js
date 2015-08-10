@@ -20,7 +20,7 @@ window.onload = function(){
         if (userNameInput.val().length == 0)
             return false;
         if (userNameInput.val().length > 20) {
-            usernameHint.removeClass("invisible").text("UserName Too Long. Maximum 20 characters");
+            usernameHint.removeClass("invisible").addClass("has-error").text("UserName Too Long. 20 chars(max)");
             return false;
         }
         $.get("/api/nameValidate", {
