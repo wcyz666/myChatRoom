@@ -19,7 +19,11 @@ window.onload = function(){
     userNameInput.on('blur', function(){
         if (userNameInput.val().length == 0)
             return false;
-        $.get("/reg/nameValidate", {
+        if (userNameInput.val().length > 20) {
+            usernameHint.removeClass("invisible").text("UserName Too Long. Maximum 20 characters");
+            return false;
+        }
+        $.get("/api/nameValidate", {
                 name: userNameInput.val().trim()
             },
             function (data) {

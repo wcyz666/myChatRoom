@@ -11,11 +11,23 @@ router.get('/roomCount', function(req, res){
 });
 
 router.all('/allRooms', function(req, res) {
-    if (!onlineUsers[req.cookies.id]){
+    if (!req.session.isLogin){
         res.redirect("/");
         return;
     }
     res.json(currentRooms);
+});
+
+router.get('/nameValidate', function(req, res) {
+
+    db.all('SELECT * FROM user WHERE username = ?', [req.query.name], function(err, rows) {
+        if (err) throw err;
+
+        if (rows.length == 0)
+            res.json({isValid : true});
+        else
+            res.json({isValid : false});
+    });
 });
 
 module.exports = router;

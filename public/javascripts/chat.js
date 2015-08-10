@@ -7,8 +7,10 @@ window.onload = function(){
         userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1],
         msg = Messenger(),
         fileUploader = $('<input type="file" class="form-control" id="image" name="image" required="required">'),
+        prevDelim = $('<div class="text-center"><small>------- Old Messages --------</small></div>'),
         unviewMsg = 0,
-        pageIsFocus = true;
+        pageIsFocus = true,
+        loadTime = Date.parse(new Date()) / 1000;
 
     var myLib = (function(){
 
@@ -26,6 +28,9 @@ window.onload = function(){
             },
             userID: userID,
             roomNum: roomNum,
+            getDelim: function() {
+                return prevDelim.clone();
+            },
             getTime: function() {
                 var now = new Date(),
                     wordsToHtml = '<p class="text-center small" id="datetime"></p>';
@@ -109,9 +114,6 @@ window.onload = function(){
     })();
 
     (function (){
-
-
-
         socket = io();
         socket.on("newClient", function(newUser){
             if ($(".player-name").text().indexOf(newUser) != -1 || newUser == myLib.username) return;
@@ -171,6 +173,45 @@ window.onload = function(){
             $("input[type='file']").remove();
             $("#file-uploader").append(myLib.getFileUploaderCopy());
             $('#exampleModal').modal("show");
+        });
+
+        $('#loadMsg').on('click', function (event) {
+            var that = $(this);
+            that.addClass('disabled');
+            $('#loading').removeClass('hidden');
+
+            $.get('/chat/loadPrevMsg', {
+                nowTime: loadTime,
+                room: myLib.roomNum
+            }, function (result) {
+                var i = result.dataCount,
+                    item;
+
+                if (i == 0) {
+                    $('#loading').addClass('hidden').next().removeClass('hidden');
+                }
+                else {
+                    content.prepend(myLib.getDelim());
+                    for (i--; i >= 0; i--) {
+                        item = result.data[i];
+                        if (item.type == 0) {
+                            content.prepend(item.username == myLib.username ?
+                                myLib.getWordsTemplate(item.content) :
+                                myLib.getOtherWordsTemplate(item.username, item.content, item.userID)
+                            );
+                        }
+                        else {
+                            content.prepend(item.username == myLib.username ?
+                                myLib.getImageTemplate(item.content) :
+                                myLib.getOtherImageTemplate(item.username, item.content, item.userID)
+                            );
+                        }
+                    }
+                    loadTime = result.newTime;
+                    that.removeClass('disabled');
+                    $('#loading').addClass('hidden');
+                }
+            });
         });
 
         $('#sendMsg').on('click', function(event) {

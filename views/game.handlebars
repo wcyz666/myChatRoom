@@ -77,8 +77,18 @@
             </div>
         </div>
         <div id="game" class="col-sm-6 col-xs-9 panel panel-default">
-            <div class="panel-heading">Chat Room</div>
+            <div class="panel-heading">
+                <h4 class="pull-left">Chat Room</h4>
+                <button id="loadMsg" class="btn btn-primary pull-right">Load Old Msg</button>
+                <div class="clearfix"></div>
+            </div>
             <div class="panel-body">
+                <div id="loading" class="text-center hidden">
+                    <img src="/images/loading.gif" width="20" /><span> Loading 20 old messages...</span>
+                </div>
+                <div id="nomore" class="text-center hidden">
+                    <span> No more old messages...</span>
+                </div>
                 <div class="media chatroom-body" id="chatroom-content">
                 </div>
             </div>

@@ -6,7 +6,6 @@ var express = require('express'),
     handlebars = require('express-handlebars').create({}),
     cookieParser = require('cookie-parser'),
     sqlite3 = require('sqlite3').verbose(),
-    db = new sqlite3.Database('user.db'),
     md5 = require('MD5'),
     socketIO = require('socket.io'),
     api = require("./routes/api"),
@@ -50,6 +49,7 @@ var server = app.listen( server_port, server_ip_address, function () {
 
 var io = socketIO(server);
 currentRooms = {};
+db = new sqlite3.Database('user.db');
 
 app.use("/api", api);
 
@@ -112,18 +112,6 @@ app.post('/login', function (req, res) {
     }
 });
 
-app.get('/reg/nameValidate', function(req, res) {
-
-    db.all('SELECT * FROM user WHERE username = ?', [req.query.name], function(err, rows) {
-        if (err) throw err;
-
-        if (rows.length == 0)
-            res.json({isValid : true});
-        else
-            res.json({isValid : false});
-    });
-});
-
 /* GET users listing. */
 app.get('/init', function(req, res) {
     db.serialize(function() {
@@ -131,7 +119,7 @@ app.get('/init', function(req, res) {
         'password CHAR(40) NOT NULL)', function(){});
         db.run('CREATE TABLE room (room_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_name CHAR(20) NOT NULL)', function(){});
         db.run('CREATE TABLE record_archive (record_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_id INTEGER NOT NULL,'
-        + 'id INTEGER NOT NULL, post_time DATETIME)', function(){});
+        + 'user_id INTEGER NOT NULL, user_name CHAR(20) NOT NULL, type INTEGER NOT NULL, content TEXT, post_time DATETIME)', function(){});
         res.redirect("/");
     });
 });
@@ -149,7 +137,7 @@ app.post('/reg', multipartMiddleware, function(req, res){
     if (username && password) {
         pwdhash = md5(username + password);
 
-        sql = "INSERT INTO user VALUES (NULL, ?, ?, '', 0)";
+        sql = "INSERT INTO user VALUES (NULL, ?, ?)";
         inserts = [username, pwdhash];
         db.run(sql, inserts, function(err, rows) {
             if (err) throw err;
@@ -296,6 +284,38 @@ app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
     }
 });
 
+app.get('/chat/loadPrevMsg', function(req, res){
+    var time = req.query.nowTime,
+        room = req.query.room;
+    console.log(req.query);
+    db.all("SELECT * FROM record_archive WHERE room_id = ? AND post_time < datetime(?, 'unixepoch', 'localtime') ORDER BY post_time DESC LIMIT 20;", [room, time], function(err, rows){
+        var i, length,
+            data = [],
+            item,
+            result,
+            newTime;
+
+        if (err) throw err;
+        for (i = 0, length = rows.length; i < length; i++) {
+            item = rows[i];
+            data.unshift({
+                username: item['user_name'],
+                userID: item['user_id'],
+                content: item.content,
+                time: item['post_time'],
+                type: item.type
+            });
+        }
+        newTime = (data.length > 0) ?  Date.parse(data[0].time) / 1000 : time;
+        result = {
+            status: 200,
+            data: data,
+            dataCount: data.length,
+            newTime: newTime
+        };
+        res.json(result);
+    });
+});
 
 /* GET users listing. */
 app.all('/room/:id([0-9]+)', function(req, res) {
@@ -366,11 +386,19 @@ io.on( 'connection', function( socket ) {
         socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherWords', data);
         console.log("words", data);
+        db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW'))",
+                [data.room, data.userID, data.username, 0, data.words], function(err, row){
+            if (err) throw err;
+        });
     });
 
     socket.on('sendImage', function(data){
         socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherImage', data);
         console.log("image", data);
+        db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW'))",
+            [data.room, data.userID, data.username, 1, data.imageName], function(err, row){
+                if (err) throw err;
+            })
     });
 });

@@ -6,6 +6,10 @@
         var roomNum = /^.*\/(.*)$/.exec(window.location.href)[1];
 
         return {
+            el: function(id, doc) {
+                var range = doc || document;
+                return range.getElementById(id);
+            },
             roomNum: roomNum
         };
     })();
@@ -20,6 +24,7 @@
 
     $('#joinRoom').on('click', function (event) {
         $.get("/api/allRooms", function(data){
+            console.log(data);
             var roomNum,
                 tableBody = "";
             for (roomNum in data) {
