@@ -43,13 +43,13 @@ $(document).ready(function() {
             getWordsTemplate : function (words){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
-                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary words text-right col-xs-12">' + words +
+                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary words text-right col-xs-12">' + words.replace(/\n/g, "<br>") +
                 '</p></div><div class="clearfix"></div>';
             },
             getOtherWordsTemplate : function (words, username, userID){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
-                '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info words col-xs-8">' + words +
+                '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info words col-xs-8">' + words.replace(/\n/g, "<br>") +
                 '</p></div><div class="clearfix"></div>';
             },
             getImageTemplate: function (src) {
@@ -104,10 +104,8 @@ $(document).ready(function() {
                 return fileUploader.clone();
             },
             createNewUser: function(user){
-                var html = "";
-                html += '<li class="li-name"><span class="label label-default player-name">' + user + '</span>';
-                html += '<button class="btn btn-success pull-right btn-sm" type="button">';
-                html += '<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Friend </button></li>';
+                var html = '<li class="li-name"><span class="label label-default player-name">' + user + '</span></li>';
+
                 return $(html);
             }
         };
@@ -163,8 +161,10 @@ $(document).ready(function() {
 
         $(document).keydown(function(event){
             if (event.keyCode == 13 || event.keyCode == 108) {
-                if (event.shiftKey)
+                if (event.shiftKey) {
                     $('#sendMsg').click();
+                    return false;
+                }
             }
         });
 
@@ -220,7 +220,7 @@ $(document).ready(function() {
             socket.emit('sendWords', {
                 room: myLib.roomNum,
                 username: myLib.username,
-                words: text.val(),
+                words: text.val().replace(/^\s+$/, ""),
                 userID : myLib.userID
             });
             text.val("");
