@@ -21,7 +21,7 @@ var express = require('express'),
 app.engine("handlebars", handlebars.engine);
 app.set("view engine", 'handlebars');
 app.use(cookieParser());
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
@@ -116,10 +116,10 @@ app.post('/login', function (req, res) {
 app.get('/init', function(req, res) {
     db.serialize(function() {
         db.run('CREATE TABLE user (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, username CHAR(20) NOT NULL,' +
-        'password CHAR(40) NOT NULL)', function(){});
-        db.run('CREATE TABLE room (room_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_name CHAR(20) NOT NULL)', function(){});
+        'password CHAR(40) NOT NULL)');
+        db.run('CREATE TABLE room (room_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_name CHAR(20) NOT NULL)');
         db.run('CREATE TABLE record_archive (record_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, room_id INTEGER NOT NULL,'
-        + 'user_id INTEGER NOT NULL, user_name CHAR(20) NOT NULL, type INTEGER NOT NULL, content TEXT, post_time DATETIME)', function(){});
+        + 'user_id INTEGER NOT NULL, user_name CHAR(20) NOT NULL, type INTEGER NOT NULL, content TEXT, post_time DATETIME)');
         res.redirect("/");
     });
 });

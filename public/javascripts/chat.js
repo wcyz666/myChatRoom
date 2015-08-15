@@ -1,5 +1,5 @@
 
-window.onload = function(){
+$(document).ready(function() {
 
     var socket,
         content = $('#chatroom-content'),
@@ -43,13 +43,13 @@ window.onload = function(){
             getWordsTemplate : function (words){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
-                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary text-right col-xs-12">' + words +
+                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary words text-right col-xs-12">' + words +
                 '</p></div><div class="clearfix"></div>';
             },
-            getOtherWordsTemplate : function (username, words, userID){
+            getOtherWordsTemplate : function (words, username, userID){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
-                '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info  col-xs-8">' + words +
+                '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info words col-xs-8">' + words +
                 '</p></div><div class="clearfix"></div>';
             },
             getImageTemplate: function (src) {
@@ -58,7 +58,7 @@ window.onload = function(){
                     '</div><div class="media-body pull-right col-xs-8"><img class="pull-right" width="' + width + '" src="/userImages/' + src +
                     '"/></div><div class="clearfix"></div>';
             },
-            getOtherImageTemplate : function (username, src, userID){
+            getOtherImageTemplate : function (src, username, userID){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
                     '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><img width="' + width + '" src="/userImages/' + src +
@@ -114,6 +114,7 @@ window.onload = function(){
     })();
 
     (function (){
+
         socket = io();
         socket.on("newClient", function(newUser){
             if ($(".player-name").text().indexOf(newUser) != -1 || newUser == myLib.username) return;
@@ -139,7 +140,7 @@ window.onload = function(){
 
         socket.on("otherWords", function(newWords){
             console.log(newWords);
-            var otherWords = myLib.getOtherWordsTemplate(newWords.username, newWords.words, newWords.userID);
+            var otherWords = myLib.getOtherWordsTemplate(newWords.words, newWords.username, newWords.userID);
             content.append(otherWords);
             content.animate(
                 {
@@ -150,7 +151,7 @@ window.onload = function(){
 
         socket.on("otherImage", function(newImage){
 
-            var otherImage = myLib.getOtherImageTemplate(newImage.username, newImage.imageName, newImage.userID);
+            var otherImage = myLib.getOtherImageTemplate(newImage.imageName, newImage.username, newImage.userID);
             content.append(otherImage);
             content.animate(
                 {
@@ -158,14 +159,12 @@ window.onload = function(){
                 }, 500);
             msgCallback();
         });
-        socket.emit("join", {
-            room: myLib.roomNum,
-            username: myLib.username
-        });
+
 
         $(document).keydown(function(event){
             if (event.keyCode == 13 || event.keyCode == 108) {
-                $('#sendMsg').click();
+                if (event.shiftKey)
+                    $('#sendMsg').click();
             }
         });
 
@@ -185,34 +184,27 @@ window.onload = function(){
                 room: myLib.roomNum
             }, function (result) {
                 var i = result.dataCount,
-                    item;
+                    item,
+                    who,
+                    type;
 
                 if (i == 0) {
                     $('#loading').addClass('hidden').next().removeClass('hidden');
                 }
                 else {
+                    loadTime = result.newTime;
                     content.prepend(myLib.getDelim());
                     for (i--; i >= 0; i--) {
                         item = result.data[i];
-                        if (item.type == 0) {
-                            content.prepend(item.username == myLib.username ?
-                                myLib.getWordsTemplate(item.content) :
-                                myLib.getOtherWordsTemplate(item.username, item.content, item.userID)
-                            );
-                        }
-                        else {
-                            content.prepend(item.username == myLib.username ?
-                                myLib.getImageTemplate(item.content) :
-                                myLib.getOtherImageTemplate(item.username, item.content, item.userID)
-                            );
-                        }
+                        who = item.username == myLib.username ? "" : "Other";
+                        type = (item.type == 0) ? "Words" : "Image";
+                        content.prepend(myLib['get' + who + type + 'Template'](item.content, item.username, item.userID));
                     }
                     if (result.dataCount < 20) {
                         $('#loading').addClass('hidden').next().removeClass('hidden');
                         return;
                     }
                     else {
-                        loadTime = result.newTime;
                         that.removeClass('disabled');
                         $('#loading').addClass('hidden');
                     }
@@ -223,7 +215,7 @@ window.onload = function(){
         $('#sendMsg').on('click', function(event) {
             var myWords = myLib.getWordsTemplate(text.val());
 
-            if (text.val() === "")
+            if (text.val().trim().match(/^\s*$/igm))
                 return false;
             socket.emit('sendWords', {
                 room: myLib.roomNum,
@@ -232,8 +224,7 @@ window.onload = function(){
                 userID : myLib.userID
             });
             text.val("");
-            content.append(myWords);
-            content.animate(
+            content.append(myWords).animate(
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
@@ -317,10 +308,15 @@ window.onload = function(){
 
         return {
             init : function () {
+                socket.emit("join", {
+                    room: myLib.roomNum,
+                    username: myLib.username
+                });
+                text.height($('#sendMsg').height());
                 myLib.createQRcode();
                 myLib.el('exit').setAttribute("href", "/room/exit/" + myLib.roomNum);
             }
         };
     })().init();
-};
+});
 
