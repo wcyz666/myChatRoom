@@ -19,7 +19,7 @@ $(document).ready(function() {
             roomNum = /^.*\/(.*)$/.exec(window.location.href)[1],
             userName = $("#username").text().trim(),
             lastTime = new Date(),
-            width = $("#game").width() * 0.5;
+            width = $("#game").width() * 0.3;
 
         return {
             el: function(id, doc) {
@@ -55,13 +55,13 @@ $(document).ready(function() {
             getImageTemplate: function (src) {
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
-                    '</div><div class="media-body pull-right col-xs-8"><img class="pull-right" width="' + width + '" src="/userImages/' + src +
+                    '</div><div class="media-body pull-right col-xs-8"><img class="pull-right img-thumbnail" width="' + width + '" src="/userImages/' + src +
                     '"/></div><div class="clearfix"></div>';
             },
             getOtherImageTemplate : function (src, username, userID){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
-                    '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><img width="' + width + '" src="/userImages/' + src +
+                    '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><img class="img-thumbnail" width="' + width + '" src="/userImages/' + src +
                     '"/></div><div class="clearfix"></div>';
             },
             username: userName,
@@ -167,11 +167,47 @@ $(document).ready(function() {
                 }
             }
         });
+        $("#game").on('click', function(event){
+            event.stopPropagation();
 
-        $('#sendPic').on('click', function(event) {
-            $("input[type='file']").remove();
-            $("#file-uploader").append(myLib.getFileUploaderCopy());
-            $('#exampleModal').modal("show");
+            switch (event.target.id){
+                case "sendPic-span":
+                case "sendPic":
+                    $("input[type='file']").remove();
+                    $("#file-uploader").append(myLib.getFileUploaderCopy());
+                    $('#exampleModal').modal("show");
+                    break;
+                case "sendMsg":
+                case "sendMsg-span":
+                    var myWords = myLib.getWordsTemplate(text.val());
+
+                    if (text.val().trim() === "")
+                        return false;
+                    socket.emit('sendWords', {
+                        room: myLib.roomNum,
+                        username: myLib.username,
+                        words: text.val().replace(/^\s+$/, ""),
+                        userID : myLib.userID
+                    });
+                    text.val("");
+                    content.append(myWords).animate(
+                        {
+                            scrollTop:content[0].scrollHeight
+                        }, 500);
+                    msgCallback();
+                    break;
+                default:
+                    if (event.target.className.indexOf("img-thumbnail") !== -1) {
+                        $('#zoom-out').modal("show");
+                        imgZoom = new Image();
+                        imgZoom.onload = function () {
+                            $('#zoom-out').find("img").replaceWith(imgZoom);
+                        }
+                        imgZoom.className = "img-responsive center-block";
+                        imgZoom.src = event.target.src;
+
+                    }
+            }
         });
 
         $('#loadMsg').on('click', function (event) {
@@ -212,24 +248,6 @@ $(document).ready(function() {
             });
         });
 
-        $('#sendMsg').on('click', function(event) {
-            var myWords = myLib.getWordsTemplate(text.val());
-
-            if (text.val().trim().match(/^\s*$/igm))
-                return false;
-            socket.emit('sendWords', {
-                room: myLib.roomNum,
-                username: myLib.username,
-                words: text.val().replace(/^\s+$/, ""),
-                userID : myLib.userID
-            });
-            text.val("");
-            content.append(myWords).animate(
-                {
-                    scrollTop:content[0].scrollHeight
-                }, 500);
-            msgCallback();
-        });
 
         function msgCallback() {
             if (!pageIsFocus) {

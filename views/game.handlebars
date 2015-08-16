@@ -93,9 +93,9 @@
                 <div class="input-group">
                     <textarea id="chatroom-text" class="form-control"></textarea>
                     <div class="input-group-btn">
-                        <button type="button" class="btn btn-default"  id="sendMsg"><span class="glyphicon glyphicon-send" aria-hidden="true">
+                        <button type="button" class="btn btn-default"  id="sendMsg"><span id="sendMsg-span" class="glyphicon glyphicon-send" aria-hidden="true">
                                     </span></button>
-                        <button type="button" class="btn btn-default" id="sendPic"><span class="glyphicon glyphicon-picture" aria-hidden="true">
+                        <button type="button" class="btn btn-default" id="sendPic"><span id="sendPic-span" class="glyphicon glyphicon-picture" aria-hidden="true">
                                     </span></button>
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></button>
                         <ul class="dropdown-menu">
@@ -129,6 +129,21 @@
                                 <div class="modal-footer">
                                     <button type="reset" class="btn btn-default" data-dismiss="modal">Close</button>
                                     <button type="submit" class="btn btn-primary">Upload</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="zoom-out" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="exampleModalLabel">Zooming out Images</h4>
+                            </div>
+                            <form action="/chat/imageUpload" method="POST" id="upload-image" >
+                                <div class="modal-body">
+                                    <img src="/images/loading.gif" class="img-responsive center-block">
                                 </div>
                             </form>
                         </div>

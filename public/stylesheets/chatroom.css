@@ -10,3 +10,6 @@
 .words {
     word-break: break-all;
 }
+.img-thumbnail {
+    cursor: pointer;
+}
