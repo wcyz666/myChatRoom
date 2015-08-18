@@ -37,7 +37,7 @@ app.use(session({
 app.use( express.static( __dirname + '/public' ) );
 
 var server_port =  3000;
-var server_ip_address = '127.0.0.1';
+var server_ip_address = '192.168.1.100';
 
 var server = app.listen( server_port, server_ip_address, function () {
     var host = server.address().address,

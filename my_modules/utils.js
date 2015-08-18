@@ -6,7 +6,7 @@ var utils = {
 
     getNewRoom: function(currentRooms){
         do {
-            var room = Math.floor(Math.random() * 100000);
+            var room = Math.floor(Math.random() * 10000000);
         } while (room in currentRooms);
         return room;
     },

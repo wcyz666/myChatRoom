@@ -9,7 +9,11 @@
 }
 .words {
     word-break: break-all;
+    max-width: 100%;
+    position: relative;
+    right: 0;
 }
 .img-thumbnail {
     cursor: pointer;
+    max-width: 50%;
 }

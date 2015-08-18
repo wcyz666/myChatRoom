@@ -43,7 +43,7 @@ $(document).ready(function() {
             getWordsTemplate : function (words){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
-                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary words text-right col-xs-12">' + words.replace(/\n/g, "<br>") +
+                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary words col-xs-12">' + words.replace(/\n/g, "<br>") +
                 '</p></div><div class="clearfix"></div>';
             },
             getOtherWordsTemplate : function (words, username, userID){
@@ -55,7 +55,7 @@ $(document).ready(function() {
             getImageTemplate: function (src) {
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
-                    '</div><div class="media-body pull-right col-xs-8"><img class="pull-right img-thumbnail" width="' + width + '" src="/userImages/' + src +
+                    '</div><div class="media-body pull-right col-xs-9"><img class="pull-right img-thumbnail" width="' + width + '" src="/userImages/' + src +
                     '"/></div><div class="clearfix"></div>';
             },
             getOtherImageTemplate : function (src, username, userID){
@@ -65,38 +65,6 @@ $(document).ready(function() {
                     '"/></div><div class="clearfix"></div>';
             },
             username: userName,
-            createNode : function(tag, child, attrs){
-                var outerTag = document.createElement(tag),
-                    content,
-                    i,
-                    length;
-                if (typeof child === "string"){
-                    content = document.createTextNode(child);
-                    outerTag.appendChild(content);
-                }
-                else {
-                    if (child instanceof Array){
-                        for (i = 0, length = child.length; i < length; i++) {
-
-                            content = child[i];
-                            if (typeof content === "string") {
-                                content = document.createTextNode(content);
-                            }
-                            else if (typeof content === "function")
-                                continue;
-                            outerTag.appendChild(content);
-                        }
-                    }
-                    else{
-                        outerTag.appendChild(child);
-                    }
-                }
-
-                for (var key in attrs) {
-                    outerTag.setAttribute(key, attrs[key]);
-                }
-                return outerTag;
-            },
             createQRcode : function(){
                 myLib.el(qrid).src = "https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=" + encodeURIComponent(curURL);
             },
@@ -139,8 +107,7 @@ $(document).ready(function() {
         socket.on("otherWords", function(newWords){
             console.log(newWords);
             var otherWords = myLib.getOtherWordsTemplate(newWords.words, newWords.username, newWords.userID);
-            content.append(otherWords);
-            content.animate(
+            content.append(otherWords).animate(
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
@@ -150,8 +117,7 @@ $(document).ready(function() {
         socket.on("otherImage", function(newImage){
 
             var otherImage = myLib.getOtherImageTemplate(newImage.imageName, newImage.username, newImage.userID);
-            content.append(otherImage);
-            content.animate(
+            content.append(otherImage).animate(
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
@@ -196,58 +162,55 @@ $(document).ready(function() {
                         }, 500);
                     msgCallback();
                     break;
+                case "loadMsg":
+                    var that = $(event.target);
+                    that.addClass('disabled');
+                    $('#loading').removeClass('hidden');
+
+                    $.get('/chat/loadPrevMsg', {
+                        nowTime: loadTime,
+                        room: myLib.roomNum
+                    }, function (result) {
+                        var i = result.dataCount,
+                            item,
+                            who,
+                            type;
+
+                        if (i == 0) {
+                            $('#loading').addClass('hidden').next().removeClass('hidden');
+                        }
+                        else {
+                            loadTime = result.newTime;
+                            content.prepend(myLib.getDelim());
+                            for (i--; i >= 0; i--) {
+                                item = result.data[i];
+                                who = item.username == myLib.username ? "" : "Other";
+                                type = (item.type == 0) ? "Words" : "Image";
+                                content.prepend(myLib['get' + who + type + 'Template'](item.content, item.username, item.userID));
+                            }
+                            if (result.dataCount < 20) {
+                                $('#loading').addClass('hidden').next().removeClass('hidden');
+                            }
+                            else {
+                                that.removeClass('disabled');
+                                $('#loading').addClass('hidden');
+                            }
+                        }
+                    });
+                    break;
                 default:
                     if (event.target.className.indexOf("img-thumbnail") !== -1) {
                         $('#zoom-out').modal("show");
-                        imgZoom = new Image();
+                        var imgZoom = new Image();
                         imgZoom.onload = function () {
                             $('#zoom-out').find("img").replaceWith(imgZoom);
-                        }
+                        };
                         imgZoom.className = "img-responsive center-block";
                         imgZoom.src = event.target.src;
 
                     }
             }
         });
-
-        $('#loadMsg').on('click', function (event) {
-            var that = $(this);
-            that.addClass('disabled');
-            $('#loading').removeClass('hidden');
-
-            $.get('/chat/loadPrevMsg', {
-                nowTime: loadTime,
-                room: myLib.roomNum
-            }, function (result) {
-                var i = result.dataCount,
-                    item,
-                    who,
-                    type;
-
-                if (i == 0) {
-                    $('#loading').addClass('hidden').next().removeClass('hidden');
-                }
-                else {
-                    loadTime = result.newTime;
-                    content.prepend(myLib.getDelim());
-                    for (i--; i >= 0; i--) {
-                        item = result.data[i];
-                        who = item.username == myLib.username ? "" : "Other";
-                        type = (item.type == 0) ? "Words" : "Image";
-                        content.prepend(myLib['get' + who + type + 'Template'](item.content, item.username, item.userID));
-                    }
-                    if (result.dataCount < 20) {
-                        $('#loading').addClass('hidden').next().removeClass('hidden');
-                        return;
-                    }
-                    else {
-                        that.removeClass('disabled');
-                        $('#loading').addClass('hidden');
-                    }
-                }
-            });
-        });
-
 
         function msgCallback() {
             if (!pageIsFocus) {
@@ -337,4 +300,3 @@ $(document).ready(function() {
         };
     })().init();
 });
-
