@@ -22,12 +22,10 @@ $(document).ready(function() {
             width = $("#game").width() * 0.3;
 
         return {
-            el: function(id, doc) {
-                var range = doc || document;
-                return range.getElementById(id);
-            },
+            username: userName,
             userID: userID,
             roomNum: roomNum,
+
             getDelim: function() {
                 return prevDelim.clone();
             },
@@ -64,9 +62,8 @@ $(document).ready(function() {
                     '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><img class="img-thumbnail" width="' + width + '" src="/userImages/' + src +
                     '"/></div><div class="clearfix"></div>';
             },
-            username: userName,
             createQRcode : function(){
-                myLib.el(qrid).src = "https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=" + encodeURIComponent(curURL);
+                $('#' + qrid).attr('src', "https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=" + encodeURIComponent(curURL));
             },
             getFileUploaderCopy : function() {
                 return fileUploader.clone();
@@ -75,6 +72,12 @@ $(document).ready(function() {
                 var html = '<li class="li-name"><span class="label label-default player-name">' + user + '</span></li>';
 
                 return $(html);
+            },
+            msgCallback: function() {
+                if (!pageIsFocus) {
+                    ++unviewMsg;
+                    document.title = unviewMsg + " messages - ChatRoom 18-652";
+                }
             }
         };
     })();
@@ -105,13 +108,12 @@ $(document).ready(function() {
         });
 
         socket.on("otherWords", function(newWords){
-            console.log(newWords);
             var otherWords = myLib.getOtherWordsTemplate(newWords.words, newWords.username, newWords.userID);
             content.append(otherWords).animate(
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
-            msgCallback();
+            myLib.msgCallback();
         });
 
         socket.on("otherImage", function(newImage){
@@ -121,7 +123,7 @@ $(document).ready(function() {
                 {
                     scrollTop:content[0].scrollHeight
                 }, 500);
-            msgCallback();
+            myLib.msgCallback();
         });
 
 
@@ -160,7 +162,7 @@ $(document).ready(function() {
                         {
                             scrollTop:content[0].scrollHeight
                         }, 500);
-                    msgCallback();
+                    myLib.msgCallback();
                     break;
                 case "loadMsg":
                     var that = $(event.target);
@@ -212,13 +214,6 @@ $(document).ready(function() {
             }
         });
 
-        function msgCallback() {
-            if (!pageIsFocus) {
-                ++unviewMsg;
-                document.title = unviewMsg + " messages - ChatRoom 18-652";
-            }
-        }
-
         $('#exit').on('click', function(event){
             socket.emit('exit', {
                 room: myLib.roomNum,
@@ -264,14 +259,13 @@ $(document).ready(function() {
                     contentType: false,
                     processData: false
                 }, 'json').success( function(data) {
-                    console.log(data);
                     var myImage = myLib.getImageTemplate(data.imageName);
                     content.append(myImage);
                     content.animate(
                         {
                             scrollTop:content[0].scrollHeight
                         }, 500);
-                    msgCallback();
+                    myLib.msgCallback();
                     socket.emit('sendImage', {
                         room: myLib.roomNum,
                         username: myLib.username,
@@ -279,7 +273,6 @@ $(document).ready(function() {
                         userID : myLib.userID
                     });
                 }).error(function(data) {
-                    console.log(data);
                 });
                 $(form).empty();
             }
@@ -295,7 +288,7 @@ $(document).ready(function() {
                 });
                 text.height($('#sendMsg').height());
                 myLib.createQRcode();
-                myLib.el('exit').setAttribute("href", "/room/exit/" + myLib.roomNum);
+                $('#exit').attr("href", "/room/exit/" + myLib.roomNum);
             }
         };
     })().init();

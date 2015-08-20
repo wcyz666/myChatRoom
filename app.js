@@ -42,9 +42,6 @@ var server_ip_address = '127.0.0.1';
 var server = app.listen( server_port, server_ip_address, function () {
     var host = server.address().address,
         port = server.address().port;
-
-    console.log('Example app listening at http://%s:%s', host, port);
-
 });
 
 var io = socketIO(server);
@@ -287,7 +284,7 @@ app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
 app.get('/chat/loadPrevMsg', function(req, res){
     var time = req.query.nowTime,
         room = req.query.room;
-    console.log(req.query);
+
     db.all("SELECT * FROM record_archive WHERE room_id = ? AND post_time < datetime(?, 'unixepoch', 'localtime') ORDER BY record_id DESC LIMIT 20;", [room, time], function(err, rows){
         var i, length,
             data = [],
@@ -372,20 +369,18 @@ io.on( 'connection', function( socket ) {
     socket.on("join", function(data) {
         socket.join(data.room);
         socket.broadcast.to(data.room).emit("newClient", data.username);
-        console.log("join", data);
+
     });
 
 
     socket.on("exit", function(data) {
         socket.join(data.room);
         socket.broadcast.to(data.room).emit("exitClient", data.username);
-        console.log("exit", data);
     });
 
     socket.on('sendWords', function(data){
         socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherWords', data);
-        console.log("words", data);
         db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW', 'localtime'))",
                 [data.room, data.userID, data.username, 0, data.words], function(err, row){
             if (err) throw err;
@@ -395,7 +390,6 @@ io.on( 'connection', function( socket ) {
     socket.on('sendImage', function(data){
         socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherImage', data);
-        console.log("image", data);
         db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW', 'localtime'))",
             [data.room, data.userID, data.username, 1, data.imageName], function(err, row){
                 if (err) throw err;

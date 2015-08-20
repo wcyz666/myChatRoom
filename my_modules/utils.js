@@ -27,7 +27,6 @@ var utils = {
         var curRoom = myInfo.currentRoom,
             pos,
             chatters;
-        console.log(rooms);
         myInfo.isChatting = false;
         if (curRoom in rooms) {
             chatters = rooms[curRoom].chatters;
