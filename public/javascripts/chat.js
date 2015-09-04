@@ -41,13 +41,13 @@ $(document).ready(function() {
             getWordsTemplate : function (words){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-right"><img class="media-object" width="48" src="/avatar/' + userID + '.png" alt="avatar">'+
-                '</div><div class="media-body pull-right col-xs-8"><p class="bg-primary words col-xs-12">' + words.replace(/\n/g, "<br>") +
+                '</div><div class="media-body word-content pull-right"><p class="bubble-self words col-xs-12">' + words.replace(/\n/g, "<br>") +
                 '</p></div><div class="clearfix"></div>';
             },
             getOtherWordsTemplate : function (words, username, userID){
                 var wordsToHtml = myLib.getTime();
                 return wordsToHtml + '<div class="pull-left"><img width="48" class="media-object" src="/avatar/' + userID + '.png" alt="avatar">' +
-                '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="bg-info words col-xs-8">' + words.replace(/\n/g, "<br>") +
+                '</div><div class="media-body"><h4 class="media-heading">' + username + '</h4><p class="words bubble-other">' + words.replace(/\n/g, "<br>") +
                 '</p></div><div class="clearfix"></div>';
             },
             getImageTemplate: function (src) {

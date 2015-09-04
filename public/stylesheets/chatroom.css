@@ -1,3 +1,7 @@
+
+body {
+    background-color: #f5f5f5;
+}
 .li-name {
     font-size:20px;
     margin-bottom: 5px;
@@ -16,4 +20,56 @@
 .img-thumbnail {
     cursor: pointer;
     max-width: 50%;
+}
+.word-content {
+    min-width: 1px;
+    max-width:60%;
+    padding-right: 10px;
+}
+.panel-body-color {
+    background-color: #f5f5f5;
+}
+
+.bubble-self {
+    background: #6f3;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 24px;
+    font-size: 20px;
+    position: relative;
+    border-radius: 11px;
+    min-height:40px;
+    min-width: 1px;
+}
+
+h4.media-heading {
+    padding-left: 10px;
+}
+
+.bubble-self:before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    right: -10px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 20px 20px;
+    border-color: transparent transparent transparent #6f3;
+}
+
+.bubble-other {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #aeaeae;;
+    background: #fff;
+    padding: 10px;
+    line-height: 24px;
+    font-size: 20px;
+    position: relative;
+    border-radius: 11px;
+    min-height:40px;
+    float:left;
+    margin-left: 10px;
+    max-width: 60%;
 }
