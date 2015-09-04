@@ -20,7 +20,12 @@
         hideAfter: 10,
         hideOnNavigate: true
     });
+    $("[name='isPublic']").bootstrapSwitch();
+    $("#private").hide();
 
+    $('input[name="isPublic"]').on('switchChange.bootstrapSwitch', function(event, state) {
+        $("#private").slideToggle();
+    });
 
     $('#joinRoom').on('click', function (event) {
         $.get("/api/allRooms", function(data){
