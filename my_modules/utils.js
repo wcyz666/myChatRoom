@@ -6,7 +6,7 @@ var utils = {
 
     getNewRoom: function(currentRooms){
         do {
-            var room = Math.floor(Math.random() * 10000000);
+            var room = Math.floor(Math.random() * 100000000);
         } while (room in currentRooms);
         return room;
     },
@@ -28,6 +28,7 @@ var utils = {
             pos,
             chatters;
         myInfo.isChatting = false;
+        myInfo.currentRoom = -1;
         if (curRoom in rooms) {
             chatters = rooms[curRoom].chatters;
             pos = chatters.indexOf(myInfo.username);
@@ -35,10 +36,11 @@ var utils = {
                 chatters.splice(pos, 1);
                 if (chatters.length == 0) {
                     delete rooms[curRoom];
+                    return true;
                 }
             }
         }
-        myInfo.currentRoom = -1;
+        return false;
     }
 };
 

@@ -353,7 +353,10 @@ app.get('/room/exit/:id([0-9]+)', function(req, res){
         res.redirect("/");
         return;
     }
-    utils.changeUserStatus(currentRooms, me);
+    room = me.currentRoom;
+    if (utils.changeUserStatus(currentRooms, me)) {
+        db.run("DELETE FROM record_archive WHERE room_id = ?", [room]);
+    }
     res.redirect("/me");
 });
 
@@ -374,12 +377,10 @@ io.on( 'connection', function( socket ) {
 
 
     socket.on("exit", function(data) {
-        socket.join(data.room);
         socket.broadcast.to(data.room).emit("exitClient", data.username);
     });
 
     socket.on('sendWords', function(data){
-        socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherWords', data);
         db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW', 'localtime'))",
                 [data.room, data.userID, data.username, 0, data.words], function(err, row){
@@ -388,7 +389,6 @@ io.on( 'connection', function( socket ) {
     });
 
     socket.on('sendImage', function(data){
-        socket.join(data.room);
         socket.broadcast.to(data.room).emit('otherImage', data);
         db.run("INSERT INTO record_archive VALUES (NULL, ?, ?, ?, ?, ?, DATETIME('NOW', 'localtime'))",
             [data.room, data.userID, data.username, 1, data.imageName], function(err, row){
