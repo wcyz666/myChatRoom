@@ -17,8 +17,10 @@ var utils = {
             roomRandom = 0,
             count = 0;
         for (key in currentRooms){
-            roomList.push(key);
-            count++;
+            if (currentRooms[key].isPublic) {
+                roomList.push(key);
+                count++;
+            }
         }
         return roomList[Math.floor(Math.random() * count)];
     },

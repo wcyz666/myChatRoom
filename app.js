@@ -46,6 +46,7 @@ var server = app.listen( server_port, server_ip_address, function () {
 
 var io = socketIO(server);
 currentRooms = {};
+currentPrivateRoom = {};
 db = new sqlite3.Database('user.db');
 
 app.use("/api", api);
@@ -200,7 +201,9 @@ app.get('/new', function(req, res, next){
     if (!session.isLogin)
         res.redirect("/");
     else
-        res.render("me", {me : session.userInfo.username});
+        res.render("me", {
+            me : session.userInfo.username
+        });
 });
 
 app.post('/new', function(req, res){
@@ -213,11 +216,22 @@ app.post('/new', function(req, res){
     room = utils.getNewRoom(currentRooms);
     me.currentRoom = room;
     me.isChatting = true;
+
     currentRooms[room] = {
         roomName : req.body.name,
         chatters:
             [me.username]
     };
+
+    if (req.body.passwd) {
+        currentRooms[room].isPublic = false;
+        currentPrivateRoom[room] = {
+            passwd : req.body.passwd
+        }
+    }
+    else {
+        currentRooms[room].isPublic = true;
+    }
 
     res.redirect("/room/" + room);
 });

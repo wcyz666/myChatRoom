@@ -29,16 +29,38 @@
 
     $('#joinRoom').on('click', function (event) {
         $.get("/api/allRooms", function(data){
-            console.log(data);
             var roomNum,
-                tableBody = "";
+                tableBody = "",
+                privateClass;
+
             for (roomNum in data) {
-                tableBody += "<tr><td>" + roomNum + "</td>";
+                privateClass = data[roomNum].isPublic ? "" : "class='warning'";
+                tableBody += "<tr " + privateClass + "><td> " + roomNum + " </td>";
                 tableBody += "<td>" + data[roomNum].roomName + "</td>";
                 tableBody += "<td>" + data[roomNum].chatters.length + "</td>";
-                tableBody += "<td><a type='button' class='btn btn-success btn-sm' href='/room/" + roomNum + "'>Enter</a></td>";
+                tableBody += "<td><a type='button' class='btn btn-success btn-sm' href='/room/" + roomNum + "'>Enter</a></td></tr>";
+                if (!data[roomNum].isPublic) {
+                    tableBody += "<tr class='hidden-input'><td>Input Room Password: </td><td colspan='2'><input type='password' name='password' /></td><td id='button-pos'></td></tr>";
+                }
             }
             myLib.el("table-body").innerHTML = tableBody;
+            $(".hidden-input").hide();
+            $('.warning').each(function(index, element) {
+                $(element).find('td').eq(0).append('<span class="glyphicon glyphicon-lock" aria-hidden="true"></span>');
+                $(element).find('a').on('click', function(event){
+                    var hide = $(this).parent().parent().next();
+                    if (!$(this).parent().is("#button-pos")) {
+                        event.preventDefault();
+
+                        hide.slideDown();
+                        $(this).appendTo(hide.find('td').eq(2));
+                    }
+                    else {
+                        location.href = $(this).attr("src") + "?password=" + (hide.find('input').val());
+                    }
+                })
+
+            });
         });
     });
 

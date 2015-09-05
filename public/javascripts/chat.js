@@ -236,10 +236,6 @@ $(document).ready(function() {
             pageIsFocus = false;
         });
 
-        $('#exampleModal').on('show.bs.modal', function (e) {
-
-        });
-
         $("#upload-image").on("submit", function(event) {
 
             var form = document.createElement("form"),
