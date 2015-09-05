@@ -9,11 +9,10 @@ var express = require('express'),
     md5 = require('MD5'),
     socketIO = require('socket.io'),
     api = require("./routes/api"),
+    chat = require("./routes/chat"),
     fs = require("fs"),
     im = require('imagemagick'),
-    multipart = require('connect-multiparty'),
-    multipartMiddleware = multipart(),
-    uuid = require('node-uuid'),
+    multipartMiddleware = require('connect-multiparty')(),
     async = require('async'),
     session = require('express-session');
 
@@ -50,7 +49,7 @@ currentPrivateRoom = {};
 db = new sqlite3.Database('user.db');
 
 app.use("/api", api);
-
+app.use("/chat", chat);
 app.get('/', function(req, res){
 
     var session = req.session;
@@ -253,80 +252,6 @@ app.get('/pick', function(req, res){
     res.redirect("/room/" + roomRandom);
 });
 
-app.post('/chat/imageUpload',multipartMiddleware, function(req, res){
-    var image = req.files.image,
-        ext = '.' + req.files.image.type.split("/")[1],
-        imageID = uuid.v4(),
-        path = __dirname + "/public/userImages/" + imageID + ext;
-
-    if (!req.session.isLogin) {
-        res.json({
-            status: "FAIL",
-            cause: "Unauthenticated user"
-        });
-    }
-    else {
-        async.waterfall([
-                function (callback) {
-                    fs.readFile(image.path, function (err, data) {
-                        callback(err, data);
-                    });
-                },
-                function (data, callback) {
-                    fs.writeFile(path, data, function (err) {
-                        callback(err, null)
-                    });
-                }],
-            function (err, result) {
-                if (err) {
-                    res.json({
-                        status: "FAIL",
-                        cause: err
-                    });
-                }
-                else {
-                    res.json({
-                        status: "OK",
-                        imageName: imageID + ext
-                    });
-                }
-            }
-        );
-    }
-});
-
-app.get('/chat/loadPrevMsg', function(req, res){
-    var time = req.query.nowTime,
-        room = req.query.room;
-
-    db.all("SELECT * FROM record_archive WHERE room_id = ? AND post_time < datetime(?, 'unixepoch', 'localtime') ORDER BY record_id DESC LIMIT 20;", [room, time], function(err, rows){
-        var i, length,
-            data = [],
-            item,
-            result,
-            newTime;
-
-        if (err) throw err;
-        for (i = 0, length = rows.length; i < length; i++) {
-            item = rows[i];
-            data.unshift({
-                username: item['user_name'],
-                userID: item['user_id'],
-                content: item.content,
-                time: item['post_time'],
-                type: item.type
-            });
-        }
-        newTime = (data.length > 0) ?  Date.parse(data[0].time) / 1000 : time;
-        result = {
-            status: 200,
-            data: data,
-            dataCount: data.length,
-            newTime: newTime
-        };
-        res.json(result);
-    });
-});
 
 /* GET users listing. */
 app.all('/room/:id([0-9]+)', function(req, res) {
@@ -353,7 +278,7 @@ app.all('/room/:id([0-9]+)', function(req, res) {
     else {
         chatters.splice(pos, 1);
     }
-    res.render("game", {
+    res.render("chat", {
         roomInfo: currentRooms[roomId],
         chatters: chatters,
         me: me
