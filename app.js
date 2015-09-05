@@ -6,14 +6,12 @@ var express = require('express'),
     handlebars = require('express-handlebars').create({}),
     cookieParser = require('cookie-parser'),
     sqlite3 = require('sqlite3').verbose(),
-    md5 = require('MD5'),
     socketIO = require('socket.io'),
     api = require("./routes/api"),
+    reg = require("./routes/reg"),
+    login = require("./routes/login"),
     chat = require("./routes/chat"),
-    fs = require("fs"),
-    im = require('imagemagick'),
-    multipartMiddleware = require('connect-multiparty')(),
-    async = require('async'),
+//    im = require('imagemagick'),
     session = require('express-session');
 
 
@@ -50,6 +48,9 @@ db = new sqlite3.Database('user.db');
 
 app.use("/api", api);
 app.use("/chat", chat);
+app.use("/login", login);
+app.use("/reg", reg);
+
 app.get('/', function(req, res){
 
     var session = req.session;
@@ -59,53 +60,6 @@ app.get('/', function(req, res){
     }
     else {
         res.render("login", {state: true});
-    }
-});
-
-app.get("/login", function(req, res){
-    res.redirect("/");
-});
-
-app.post('/login', function (req, res) {
-    var pwdhash,
-        cookie,
-        sql = "",
-        inserts = [];
-
-    if (req.body.username && req.body.password) {
-        pwdhash = md5(req.body.username + req.body.password);
-        sql = "SELECT * FROM user WHERE password = ?";
-        inserts = [pwdhash];
-        if (req.session.userInfo && pwdhash == req.session.userInfo.pwd) {
-            req.session.isLogin = true;
-            res.redirect("me");
-        }
-        else {
-            db.all(sql, inserts, function (err, rows) {
-                if (err) throw err;
-                if (rows.length > 0) {
-
-                    req.session.regenerate(function () {
-                        req.session.userInfo = {
-                            userID: rows[0].id,
-                            username: rows[0].username,
-                            pwd: rows[0].password,
-                            isChatting: false,
-                            currentRoom: -1
-                        };
-                        req.session.isLogin = true;
-
-                        res.redirect("me");
-                    });
-                }
-                else {
-                    res.render("login", {state: false});
-                }
-            });
-        }
-    }
-    else {
-        res.render("login", {state: false});
     }
 });
 
@@ -122,61 +76,7 @@ app.get('/init', function(req, res) {
 });
 
 
-app.post('/reg', multipartMiddleware, function(req, res){
 
-    var pwdhash,
-        sql = "",
-        inserts = [],
-        username = req.body.username,
-        password = req.body.password,
-        avatar = req.files.avatar;
-
-    if (username && password) {
-        pwdhash = md5(username + password);
-
-        sql = "INSERT INTO user VALUES (NULL, ?, ?)";
-        inserts = [username, pwdhash];
-        db.run(sql, inserts, function(err, rows) {
-            if (err) throw err;
-            db.get("SELECT id FROM user WHERE username = ?", [username], function(err, row) {
-                if (err) throw err;
-
-                async.waterfall([
-                    function (callback) {
-                        fs.readFile(avatar.path, function (err, data) {
-                            callback(err, data);
-                        });
-                    },
-                    function (data, callback) {
-                        var path = __dirname + "/public/avatar/" + row.id + '.png';
-                        fs.writeFile(path, data, function (err){
-                            callback(err, null)
-                        });
-                    },
-                    function (data, callback) {
-                        req.session.regenerate(function(err){
-                           callback(err, null) ;
-                        });
-                    }],
-                    function (err, result) {
-                        req.session.userInfo = {
-                            userID: row.id,
-                            username: username,
-                            pwd: pwdhash,
-                            isChatting: false,
-                            currentRoom : -1
-                        };
-                        req.session.isLogin = true;
-                        res.redirect("me");
-                    }
-                );
-            });
-        });
-    }
-    else {
-        res.redirect('/reg.html');
-    }
-});
 
 app.get('/me', function(req, res) {
     var session = req.session;
@@ -284,22 +184,6 @@ app.all('/room/:id([0-9]+)', function(req, res) {
         me: me
     });
 });
-
-app.get('/room/exit/:id([0-9]+)', function(req, res){
-    var me = req.session.userInfo,
-        room;
-    if (!me){
-        res.redirect("/");
-        return;
-    }
-    room = me.currentRoom;
-    if (utils.changeUserStatus(currentRooms, me)) {
-        db.run("DELETE FROM record_archive WHERE room_id = ?", [room]);
-    }
-    res.redirect("/me");
-});
-
-
 
 app.use(function (req, res) {
     res.status(404);

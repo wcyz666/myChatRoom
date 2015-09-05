@@ -288,7 +288,7 @@ $(document).ready(function() {
                 });
                 text.height($('#sendMsg').height());
                 myLib.createQRcode();
-                $('#exit').attr("href", "/room/exit/" + myLib.roomNum);
+                $('#exit').attr("href", "/chat/exit/" + myLib.roomNum);
             }
         };
     })().init();
