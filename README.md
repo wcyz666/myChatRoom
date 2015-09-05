@@ -9,12 +9,12 @@ A chat room application for 18-652
 ![image](https://github.com/wcyz666/18-652_PreLab/raw/master/screenshots/me.png)
 
 3. You can choose to create a private or public room
-![image]https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-new-public.png)
-![image]https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-new-private.png)
+![image](https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-new-public.png)
+![image](https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-new-private.png)
 
 4. When you click "join" button
-![image]https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-join-1.png)
-![image]https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-join-2.png)
+![image](https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-join-1.png)
+![image](https://raw.githubusercontent.com/wcyz666/18-652_PreLab/a64bd9e11d97f67b55bacba43b0c34c580caeb85/screenshots/me-join-2.png)
 
 5. The chat room UI
 It will store all information in the database. You can click "load old msg" to load previous messages.
