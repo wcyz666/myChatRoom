@@ -260,18 +260,21 @@ $(document).ready(function() {
                     processData: false
                 }, 'json').success( function(data) {
                     var myImage = myLib.getImageTemplate(data.imageName);
-                    content.append(myImage);
-                    content.animate(
-                        {
-                            scrollTop:content[0].scrollHeight
-                        }, 500);
-                    myLib.msgCallback();
-                    socket.emit('sendImage', {
-                        room: myLib.roomNum,
-                        username: myLib.username,
-                        imageName: data.imageName,
-                        userID : myLib.userID
-                    });
+
+                    if (data.status != "FAIL" ) {
+                        content.append(myImage);
+                        content.animate(
+                            {
+                                scrollTop: content[0].scrollHeight
+                            }, 500);
+                        myLib.msgCallback();
+                        socket.emit('sendImage', {
+                            room: myLib.roomNum,
+                            username: myLib.username,
+                            imageName: data.imageName,
+                            userID: myLib.userID
+                        });
+                    }
                 }).error(function(data) {
                 });
                 $(form).empty();

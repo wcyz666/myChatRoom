@@ -47,7 +47,7 @@ router.post('/imageUpload',multipartMiddleware, function(req, res){
         ext = '.' + req.files.image.type.split("/")[1],
         imageID = uuid.v4(),
         path = __dirname + "/../public/userImages/" + imageID + ext;
-    if (!req.session.isLogin) {
+    if (!req.session.isLogin || !ext.match(/jpe?g|gif|png/i)) {
         res.json({
             status: "FAIL",
             cause: "Unauthenticated user"
