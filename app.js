@@ -213,12 +213,14 @@ io.on( 'connection', function( socket ) {
     socket.on("join", function(data) {
         socket.join(data.room);
         socket.broadcast.to(data.room).emit("newClient", data.username);
-
     });
-
 
     socket.on("exit", function(data) {
         socket.broadcast.to(data.room).emit("exitClient", data.username);
+    });
+
+    socket.on("roomMembers", function(data) {
+        socket.emit("roomMembersReply", currentRooms[data.room].chatters);
     });
 
     socket.on('sendWords', function(data){

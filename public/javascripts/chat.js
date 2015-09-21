@@ -1,8 +1,8 @@
+var socket = io();
 
 $(document).ready(function() {
 
-    var socket,
-        content = $('#chatroom-content'),
+      var  content = $('#chatroom-content'),
         text = $('#chatroom-text'),
         userID = /\/(\d+)\.\w+$/.exec($("img[width]").attr("src"))[1],
         msg = Messenger(),
@@ -83,29 +83,6 @@ $(document).ready(function() {
     })();
 
     (function (){
-
-        socket = io();
-        socket.on("newClient", function(newUser){
-            if ($(".player-name").text().indexOf(newUser) != -1 || newUser == myLib.username) return;
-
-            $("#players").append(myLib.createNewUser(newUser));
-            msg.post({
-                message: "User " + newUser + " comes in !",
-                hideAfter: 10,
-                hideOnNavigate: true
-            });
-        });
-
-
-        socket.on("exitClient", function(newUser){
-
-            $("li:contains(" + newUser.trim() + ")").remove();
-            msg.post({
-                message: "User " + newUser + " exit !",
-                hideAfter: 10,
-                hideOnNavigate: true
-            });
-        });
 
         socket.on("otherWords", function(newWords){
             var otherWords = myLib.getOtherWordsTemplate(newWords.words, newWords.username, newWords.userID);

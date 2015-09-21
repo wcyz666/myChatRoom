@@ -55,21 +55,8 @@
     <div class="row">
         <div class="panel panel-warning col-sm-3 col-xs-12">
             <div class="panel-heading">Chatter List</div>
-            <div class="panel-body">
-                <ul class="list-unstyled" id="players">
-                    <li class="li-name">
-                                <span class="label label-primary player-name">{{me.username}}
-                                    <span class="glyphicon glyphicon-user" aria-hidden="true">
-                                    </span>
-                                </span>
-                    </li>
-                    {{#each chatters}}
-                        <li class="li-name">
-                            <span  class="label label-default player-name">{{.}}</span>
-                        </li>
+            <div class="panel-body" id="players">
 
-                    {{/each}}
-                </ul>
             </div>
         </div>
         <div id="game" class="col-sm-6 col-xs-12 panel panel-default">
@@ -184,6 +171,7 @@
 <script src="/javascripts/chat.js"></script>
 <script src="/javascripts/JSXTransformer.js"></script>
 <script src="/javascripts/react.min.js"></script>
+<script type="text/jsx" src="/javascripts/chatterList.js"></script>
 </html>
 
 

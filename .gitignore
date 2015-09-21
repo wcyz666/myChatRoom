@@ -7,3 +7,4 @@ user.db
 sqlite3.exe
 /public/avatar
 /public/userImages
+bower_components/*
