@@ -1,5 +1,4 @@
-# 18-652_PreLab
-A chat room application for 18-652
+# A chat room application using Socket.io/nodejs/jQuery/React.js. Migrating to React.js
 
 1. This is the login &registration page
 ![image](https://raw.githubusercontent.com/wcyz666/18-652_PreLab/c224d39cdc93ca7fcb44f7f7a3bf1f7558ba1a05/screenshots/login.png)
