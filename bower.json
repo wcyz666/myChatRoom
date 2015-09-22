@@ -5,6 +5,7 @@
   "authors": [
     "WANG Cheng <wcyz666@126.com>"
   ],
+  "directory": "./public/bower_components/",
   "main": "app.js",
   "license": "MIT",
   "ignore": [

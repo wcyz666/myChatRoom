@@ -1,10 +1,9 @@
 # Created by .ignore support plugin (hsz.mobi)
 node_modules/*
-.idea/workspace.xml
 .idea/*
 npm-debug.log
 user.db
 sqlite3.exe
 /public/avatar
 /public/userImages
-bower_components/*
+public/bower_components/*

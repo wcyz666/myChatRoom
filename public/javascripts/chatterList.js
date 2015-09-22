@@ -1,6 +1,7 @@
 /**
  * Created by ASUA on 2015/9/20.
  */
+var React = require("react");
 var userName = $("#username").text().trim();
 var roomNum = /^.*\/(.*)$/.exec(window.location.href)[1];
 var ChatterList = React.createClass({
